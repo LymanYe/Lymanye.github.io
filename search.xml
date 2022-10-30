@@ -1,135 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Android程序分析&amp;反编译重签名</title>
-    <url>/2022/10/16/analysis-of-android-program-decompile-and-resignature/</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>此系列为读《Android软件安全权威指南》学习笔记以及自己的一些实践心得体会记录</p>
-<h2 id="实践环境"><a href="#实践环境" class="headerlink" title="实践环境"></a>实践环境</h2><blockquote>
-<p><strong>操作系统</strong>： Windows</p>
-</blockquote>
-<h2 id="常用逆向分析工具"><a href="#常用逆向分析工具" class="headerlink" title="常用逆向分析工具"></a>常用逆向分析工具</h2><p><a href="https://bitbucket.org/JesusFreke/smali/downloads/">backsmail</a>: DEX文件的反编译与回编译工具，提供了smail语法格式，使DEX文件的修改可以基于smail汇编指令完成。ApkTool底层就是使用它提供的dexlib库来生成smail反汇编文件的</p>
-<p><a href="">dex2jar</a>:DEX文件转换成jar工具，对使用dex2jar转换的jar包，可以通过jd-gui等工具查看Java代码。</p>
-<p><a href="https://www.sweetscape.com/010editor/">010Editor</a>: 是一款专业的文本和十六进制编辑器，其旨在快速轻松地编辑计算机上任何文件的内容.在逆向分析场景中，可以使用此软件内置的脚本语言编写二进制文件格式模板，进行文件格式的分析与测试。</p>
-<h2 id="搭建源码分析环境"><a href="#搭建源码分析环境" class="headerlink" title="搭建源码分析环境"></a>搭建源码分析环境</h2><p>在逆向分析场景中，需要分析Android系统源码，例如：</p>
-<ul>
-<li>测试最新的Android源码刷入自己的rom</li>
-<li>定制Android系统，打造专属脱壳工具</li>
-<li>编译Android内核并刷机，来绕过反调试</li>
-<li>动态调试Android系统源码<br>目前我这边比较方便的是使用Windows10系统来编译，其他系统环境有需要后续补充</li>
-</ul>
-<h3 id="Window10-Android源码编译"><a href="#Window10-Android源码编译" class="headerlink" title="Window10 Android源码编译"></a>Window10 Android源码编译</h3><p>Windows系统默认不支持源码编译，只有Linux和Mac上支持编译，所以Windows要有Linux或者Ubuntu的系统环境，这里使用DockerDestop For Windows来搞定系统环境，可以粗略理解为它是一个这些环境工具的大集成软件<br><a href="https://zhuanlan.zhihu.com/p/302961875">安装介绍文档参考</a><br><a href="https://blog.51cto.com/u_15060464/3872849">Windows docker镜像位置修改</a><br><a href="https://www.bilibili.com/read/cv10164178">实战Ubuntu20编译Android8.0系统源码</a></p>
-<h2 id="破解第一个Android程序"><a href="#破解第一个Android程序" class="headerlink" title="破解第一个Android程序"></a>破解第一个Android程序</h2><p>本文使用到的Android项目源码<a href="Crackme0201.7z">Crackme0201</a><br>整体代码如下：</p>
-<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">public class MainActivity extends AppCompatActivity &#123;</span><br><span class="line">private EditText edit_userName;</span><br><span class="line">private EditText edit_sn;</span><br><span class="line">private Button btn_register;</span><br><span class="line"></span><br><span class="line">@Override</span><br><span class="line">public void onCreate(Bundle savedInstanceState) &#123;</span><br><span class="line">    super.onCreate(savedInstanceState);</span><br><span class="line">    setContentView(R.layout.activity_main);</span><br><span class="line">    setTitle(R.string.unregister);</span><br><span class="line">    edit_userName = (EditText) findViewById(R.id.edit_username);</span><br><span class="line">    edit_sn = (EditText) findViewById(R.id.edit_sn);</span><br><span class="line">    btn_register = (Button) findViewById(R.id.button_register);</span><br><span class="line">    btn_register.setOnClickListener(new <span class="function"><span class="title">OnClickListener</span></span>() &#123;</span><br><span class="line"></span><br><span class="line">        public void onClick(View v) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!checkSN(edit_userName.getText().toString().trim(),</span><br><span class="line">                    edit_sn.getText().toString().trim())) &#123;</span><br><span class="line">                Toast.makeText(MainActivity.this,</span><br><span class="line">                        R.string.unsuccessed, Toast.LENGTH_SHORT).show();</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                Toast.makeText(MainActivity.this,</span><br><span class="line">                        R.string.successed, Toast.LENGTH_SHORT).show();</span><br><span class="line">                btn_register.setEnabled(<span class="literal">false</span>);</span><br><span class="line">                setTitle(R.string.registered);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private boolean checkSN(String userName, String sn) &#123;</span><br><span class="line">    try &#123;</span><br><span class="line">        <span class="keyword">if</span> ((userName == null) || (userName.length() == 0))</span><br><span class="line">            <span class="built_in">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span> ((sn == null) || (sn.length() != 16))</span><br><span class="line">            <span class="built_in">return</span> <span class="literal">false</span>;</span><br><span class="line">        MessageDigest digest = MessageDigest.getInstance(<span class="string">&quot;MD5&quot;</span>);</span><br><span class="line">        digest.reset();</span><br><span class="line">        digest.update(userName.getBytes());</span><br><span class="line">        byte[] bytes = digest.digest();</span><br><span class="line">        String hexstr = toHexString(bytes, <span class="string">&quot;&quot;</span>);</span><br><span class="line">        StringBuilder sb = new StringBuilder();</span><br><span class="line">        <span class="keyword">for</span> (int i = 0; i &lt; hexstr.length(); i += 2) &#123;</span><br><span class="line">            sb.append(hexstr.charAt(i));</span><br><span class="line">        &#125;</span><br><span class="line">        String userSN = sb.toString();</span><br><span class="line">        Log.d(<span class="string">&quot;checkSN&quot;</span>, hexstr);</span><br><span class="line">        Log.d(<span class="string">&quot;checkSN&quot;</span>, userSN);</span><br><span class="line">        <span class="keyword">if</span> (!userSN.equalsIgnoreCase(sn))</span><br><span class="line">            <span class="built_in">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125; catch (NoSuchAlgorithmException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">        <span class="built_in">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private static String toHexString(byte[] bytes, String separator) &#123;</span><br><span class="line">    StringBuilder hexString = new StringBuilder();</span><br><span class="line">    <span class="keyword">for</span> (byte b : bytes) &#123;</span><br><span class="line">        String hex = Integer.toHexString(0xFF &amp; b);</span><br><span class="line">        <span class="keyword">if</span>(hex.length() == 1)&#123;</span><br><span class="line">            hexString.append(<span class="string">&#x27;0&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        hexString.append(hex).append(separator);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">return</span> hexString.toString();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-
-<p>运行界面：</p>
-<div style="width:50%;margin:auto"><img data-src="/2022/10/16/analysis-of-android-program-decompile-and-resignature/Screenshot_2022-10-23-16-22-32-266_com.droider.crackme0201.jpg" class=""></div>
-
-<p>点击按钮后让应用变为显示已注册的title</p>
-<h3 id="破解思路顺序"><a href="#破解思路顺序" class="headerlink" title="破解思路顺序"></a>破解思路顺序</h3><ul>
-<li>使用ApkTool反编译Apk,生成smail格式的反汇编代码</li>
-<li>阅读smail代码理解程序运行机制，找到突破口，修改代码</li>
-<li>使用ApkTool重新编译生成APK文件并对其签名</li>
-<li>运行测试，反复以上步骤已达到破解</li>
-</ul>
-<h3 id="反编译Apk"><a href="#反编译Apk" class="headerlink" title="反编译Apk"></a>反编译Apk</h3><h4 id="安装ApkTool"><a href="#安装ApkTool" class="headerlink" title="安装ApkTool"></a>安装ApkTool</h4><p><a href="https://bitbucket.org/iBotPeaches/apktool/downloads/">ApkTool</a>: 提供了Android Apk的反编译与回编译功能，让Apk重新打包成为可能。</p>
-<p>下载对应系统的Apktool jar并下载对应系统的<a href="https://ibotpeaches.github.io/Apktool/install/">运行时包装脚本</a><br>把这两个文件放到同一目录，然后添加到环境变量中</p>
-<p>打开cmd输入：</p>
-<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">apktool -version</span><br></pre></td></tr></table></figure></div>
-<br>
-看到对应的版本，表示已经安装添加环境变量成功
-<img data-src="/2022/10/16/analysis-of-android-program-decompile-and-resignature/Snipaste_2022-10-10_15-43-23.png" class="">
-
-<h4 id="使用Apktool反编译Apk"><a href="#使用Apktool反编译Apk" class="headerlink" title="使用Apktool反编译Apk"></a>使用Apktool反编译Apk</h4><p>生成一个<a href="app-debug.apk">debug</a>版本的apk当前apk的目录下使用cmd窗口执行</p>
-<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">apktool d ./app-debug.apk -o outdir</span><br></pre></td></tr></table></figure></div>
-<br>
-会生成outdir文件夹，里面包含apk的反编译文件，接下来要分析里面的文件
-<img data-src="/2022/10/16/analysis-of-android-program-decompile-and-resignature/Snipaste_2022-10-10_16-36-53.png" class="">
-
-<h3 id="分析apk文件"><a href="#分析apk文件" class="headerlink" title="分析apk文件"></a>分析apk文件</h3><p>点击注册按钮会提示:无效用户名和注册码 这个地方和判断注册的关键逻辑有关，我们可以使用这个作为突破口。</p>
-<h4 id="内部反编译文件顺序检索"><a href="#内部反编译文件顺序检索" class="headerlink" title="内部反编译文件顺序检索"></a>内部反编译文件顺序检索</h4><ul>
-<li><p>这个字符可以硬编码在代码里，也可以写在res\values\string.xml里面。打包的时候string.xml的字符串被加密存储在resource.arsc文件并保存到apk包中，如果apk被反编译，这个文件也就解密了。从解密文件夹的res\values\string.xml找到改文案提示的name为unsuccessed</p>
-</li>
-<li><p>Android程序中，string.xml中的字符串资源都在gen&#x2F;R.java的String类中标识，每个字符串都有唯一的int类型索引值。<a href="https://blog.csdn.net/baidu_31093133/article/details/113700629">android studio找不到R.java文件怎么办？</a></p>
-</li>
-<li><p>使用Apktool反编译apk后这些int值保存在和string.xml同级的public.xml中。outdir&#x2F;res&#x2F;values&#x2F;public.xml中通过name为unsuccessed找到id为0x7f0d0028</p>
-</li>
-</ul>
-<h4 id="全局搜索顺序检索"><a href="#全局搜索顺序检索" class="headerlink" title="全局搜索顺序检索"></a>全局搜索顺序检索</h4><p>如果是Mac和Linux可以使用命令 grep来查找</p>
-<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">grep -r <span class="string">&quot;无效用户名或注册码&quot;</span> outdir/</span><br><span class="line">// 找到name为unsuccessed</span><br><span class="line">grep -r unsuccessed outdir/</span><br><span class="line">// 找到<span class="built_in">id</span>为0x7f0d0028 并且还在outdir/smali/com/crackme0201/MainActivity<span class="variable">$1</span>.smail中使用过</span><br><span class="line"></span><br><span class="line"><span class="comment"># virtual methods</span></span><br><span class="line">.method public onClick(Landroid/view/View;)V</span><br><span class="line">.....</span><br><span class="line">.line 58</span><br><span class="line">    iget-object v0, p0, Lcom/droider/crackme0201/MainActivity<span class="variable">$1</span>;-&gt;this<span class="variable">$0</span>:Lcom/droider/crackme0201/MainActivity;</span><br><span class="line"></span><br><span class="line">    const v2, 0x7f0d0028</span><br><span class="line"></span><br><span class="line">    invoke-static &#123;v0, v2, v1&#125;, Landroid/widget/Toast;-&gt;makeText(Landroid/content/Context;II)Landroid/widget/Toast;</span><br><span class="line"></span><br><span class="line">    move-result-object v0</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
-<br>
-这个代码在onClick方法里面调用，接下来需要阅读这个smali方法里面的代码，需要对照写的java代码来参考看
-
-<h4 id="分析smali指令代码"><a href="#分析smali指令代码" class="headerlink" title="分析smali指令代码"></a>分析smali指令代码</h4><div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># virtual methods</span></span><br><span class="line">.method public onClick(Landroid/view/View;)V</span><br><span class="line">    .locals 3</span><br><span class="line">    .param p1, <span class="string">&quot;v&quot;</span>    <span class="comment"># Landroid/view/View;</span></span><br><span class="line"></span><br><span class="line">    .line 56</span><br><span class="line">	<span class="comment"># iget-object获取MainActivity实例的引用。-&gt;this$0是内部类MainActivity$1中的一个synthetic字段,存储的是父类MainActivity的引用。</span></span><br><span class="line">    iget-object v0, p0, Lcom/droider/crackme0201/MainActivity<span class="variable">$1</span>;-&gt;this<span class="variable">$0</span>:Lcom/droider/crackme0201/MainActivity;</span><br><span class="line">	<span class="comment"># 获取edit_userName这个EditText的引用（待确认）</span></span><br><span class="line">    invoke-static &#123;v0&#125;, Lcom/droider/crackme0201/MainActivity;-&gt;access<span class="variable">$000</span>(Lcom/droider/crackme0201/MainActivity;)Landroid/widget/EditText;</span><br><span class="line">	<span class="comment"># 把edit_userName的引用放到v1寄存器里面存储</span></span><br><span class="line">    move-result-object v1</span><br><span class="line">	<span class="comment"># edit_userName执行getText()方法获得Editable对应引用</span></span><br><span class="line">    invoke-virtual &#123;v1&#125;, Landroid/widget/EditText;-&gt;getText()Landroid/text/Editable;</span><br><span class="line">	<span class="comment"># 把v1寄存器里面赋值Editable对应引用</span></span><br><span class="line">    move-result-object v1</span><br><span class="line">	<span class="comment"># Editable对应引用执行toString方法</span></span><br><span class="line">    invoke-virtual &#123;v1&#125;, Ljava/lang/Object;-&gt;toString()Ljava/lang/String;</span><br><span class="line">	<span class="comment"># v1寄存器赋值存储edit_userName的String值</span></span><br><span class="line">    move-result-object v1</span><br><span class="line">	<span class="comment"># String值调用trim方法</span></span><br><span class="line">    invoke-virtual &#123;v1&#125;, Ljava/lang/String;-&gt;trim()Ljava/lang/String;</span><br><span class="line">	<span class="comment"># v1寄存器存储trim后的string值</span></span><br><span class="line">    move-result-object v1</span><br><span class="line"></span><br><span class="line">    iget-object v2, p0, Lcom/droider/crackme0201/MainActivity<span class="variable">$1</span>;-&gt;this<span class="variable">$0</span>:Lcom/droider/crackme0201/MainActivity;</span><br><span class="line"></span><br><span class="line">    .line 57</span><br><span class="line">	<span class="comment"># 获取edit_sn这个EditText的引用（待确认）</span></span><br><span class="line">    invoke-static &#123;v2&#125;, Lcom/droider/crackme0201/MainActivity;-&gt;access<span class="variable">$100</span>(Lcom/droider/crackme0201/MainActivity;)Landroid/widget/EditText;</span><br><span class="line">	<span class="comment"># 把edit_sn的引用放到v2寄存器里面存储</span></span><br><span class="line">    move-result-object v2</span><br><span class="line">	<span class="comment"># edit_sn执行getText()方法获得Editable对应引用</span></span><br><span class="line">    invoke-virtual &#123;v2&#125;, Landroid/widget/EditText;-&gt;getText()Landroid/text/Editable;</span><br><span class="line">	<span class="comment"># 把v2寄存器里面赋值Editable对应引用</span></span><br><span class="line">    move-result-object v2</span><br><span class="line">	<span class="comment"># Editable对应引用执行toString方法</span></span><br><span class="line">    invoke-virtual &#123;v2&#125;, Ljava/lang/Object;-&gt;toString()Ljava/lang/String;</span><br><span class="line">	<span class="comment"># v2寄存器赋值存储edit_sn的String值</span></span><br><span class="line">    move-result-object v2</span><br><span class="line">	<span class="comment"># String值调用trim方法</span></span><br><span class="line">    invoke-virtual &#123;v2&#125;, Ljava/lang/String;-&gt;trim()Ljava/lang/String;</span><br><span class="line">	<span class="comment"># v2寄存器存储trim后的string值</span></span><br><span class="line">    move-result-object v2</span><br><span class="line"></span><br><span class="line">    .line 56</span><br><span class="line">	<span class="comment"># 执行checkSN方法</span></span><br><span class="line">    invoke-static &#123;v0, v1, v2&#125;, Lcom/droider/crackme0201/MainActivity;-&gt;access<span class="variable">$200</span>(Lcom/droider/crackme0201/MainActivity;Ljava/lang/String;Ljava/lang/String;)Z</span><br><span class="line">	<span class="comment"># vo寄存器存储checkSN方法的值</span></span><br><span class="line">    move-result v0</span><br><span class="line">	</span><br><span class="line">    const/4 v1, 0x0</span><br><span class="line">	<span class="comment"># 对v0寄存器进行判断为真(不为0/为true)就跳转到cond_0</span></span><br><span class="line">    if-nez v0, :cond_0</span><br><span class="line"></span><br><span class="line">    .line 58</span><br><span class="line">	<span class="comment"># if-nez v0判断为false，因为checkSN取反</span></span><br><span class="line">    iget-object v0, p0, Lcom/droider/crackme0201/MainActivity<span class="variable">$1</span>;-&gt;this<span class="variable">$0</span>:Lcom/droider/crackme0201/MainActivity;</span><br><span class="line">	<span class="comment"># 把unsuccessed的值赋给v2寄存器</span></span><br><span class="line">    const v2, 0x7f0d0028</span><br><span class="line">	<span class="comment"># 执行Toast的makeText方法</span></span><br><span class="line">    invoke-static &#123;v0, v2, v1&#125;, Landroid/widget/Toast;-&gt;makeText(Landroid/content/Context;II)Landroid/widget/Toast;</span><br><span class="line">	<span class="comment"># 获得Toast对象引用赋值给v0</span></span><br><span class="line">    move-result-object v0</span><br><span class="line"></span><br><span class="line">    .line 59</span><br><span class="line">	<span class="comment"># 执行Toast的show方法</span></span><br><span class="line">    invoke-virtual &#123;v0&#125;, Landroid/widget/Toast;-&gt;show()V</span><br><span class="line"></span><br><span class="line">    goto :goto_0</span><br><span class="line"></span><br><span class="line">    .line 61</span><br><span class="line">    :cond_0</span><br><span class="line">	<span class="comment"># 以下为!checkSN()整体为false后要走的注册成功代码逻辑，下面每条执行分析参考上面的分析</span></span><br><span class="line">    iget-object v0, p0, Lcom/droider/crackme0201/MainActivity<span class="variable">$1</span>;-&gt;this<span class="variable">$0</span>:Lcom/droider/crackme0201/MainActivity;</span><br><span class="line"></span><br><span class="line">    const v2, 0x7f0d0025</span><br><span class="line"></span><br><span class="line">    invoke-static &#123;v0, v2, v1&#125;, Landroid/widget/Toast;-&gt;makeText(Landroid/content/Context;II)Landroid/widget/Toast;</span><br><span class="line"></span><br><span class="line">    move-result-object v0</span><br><span class="line"></span><br><span class="line">    .line 62</span><br><span class="line">    invoke-virtual &#123;v0&#125;, Landroid/widget/Toast;-&gt;show()V</span><br><span class="line"></span><br><span class="line">    .line 63</span><br><span class="line">    iget-object v0, p0, Lcom/droider/crackme0201/MainActivity<span class="variable">$1</span>;-&gt;this<span class="variable">$0</span>:Lcom/droider/crackme0201/MainActivity;</span><br><span class="line"></span><br><span class="line">    invoke-static &#123;v0&#125;, Lcom/droider/crackme0201/MainActivity;-&gt;access<span class="variable">$300</span>(Lcom/droider/crackme0201/MainActivity;)Landroid/widget/Button;</span><br><span class="line"></span><br><span class="line">    move-result-object v0</span><br><span class="line"></span><br><span class="line">    invoke-virtual &#123;v0, v1&#125;, Landroid/widget/Button;-&gt;setEnabled(Z)V</span><br><span class="line"></span><br><span class="line">    .line 64</span><br><span class="line">    iget-object v0, p0, Lcom/droider/crackme0201/MainActivity<span class="variable">$1</span>;-&gt;this<span class="variable">$0</span>:Lcom/droider/crackme0201/MainActivity;</span><br><span class="line"></span><br><span class="line">    const v1, 0x7f0d0021</span><br><span class="line"></span><br><span class="line">    invoke-virtual &#123;v0, v1&#125;, Lcom/droider/crackme0201/MainActivity;-&gt;setTitle(I)V</span><br><span class="line"></span><br><span class="line">    .line 66</span><br><span class="line">    :goto_0</span><br><span class="line">    return-void</span><br><span class="line">.end method</span><br></pre></td></tr></table></figure></div>
-
-<p>如上面的分析，弹出注册成功提示标识注册成功,所以主要修改line 57里面的<font color=red>if-nez v0, :cond_0</font>这条指令就好。</p>
-<ul>
-<li>if-nez：Dalvik指令集中的一个条件跳转指令</li>
-<li>if-eqz: 与ifnez相反，表示比较结果为0（为false）时就跳转</li>
-</ul>
-<p><strong>分析结论</strong>：把line 57里面的<font color=red>if-nez v0, :cond_0</font>修改为<font color=red>if-eqz v0, :cond_0</font>就好，修改后要重新进行打包。</p>
-<h4 id="重新编译Apk文件并签名"><a href="#重新编译Apk文件并签名" class="headerlink" title="重新编译Apk文件并签名"></a>重新编译Apk文件并签名</h4><h5 id="重新回编apk"><a href="#重新回编apk" class="headerlink" title="重新回编apk"></a>重新回编apk</h5><p>回编命令：</p>
-<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">apktool b outdir</span><br></pre></td></tr></table></figure></div>
-<br>
-
-<p>如果成功在&#x2F;outdir&#x2F;dist&#x2F;app-debug.apk重新生成的apk在这个位置，注意这个apk是没有签名的，需要签名后安装</p>
-<h5 id="签名回编的apk"><a href="#签名回编的apk" class="headerlink" title="签名回编的apk"></a>签名回编的apk</h5><h6 id="使用v1签名重新签名apk"><a href="#使用v1签名重新签名apk" class="headerlink" title="使用v1签名重新签名apk"></a>使用v1签名重新签名apk</h6><p>  所需文件：<br>  signapk.jar，testkey.x509.pem,testkey.pk8，网上搜可以从android系统源码中获取，我从网上找了份，可以<a href="signapk.jar.zip">点击链接</a>直接下载这三个文件</p>
-<p>  执行签名命令：<br>      <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">java -jar signapk.jar testkey.x509.pem testkey.pk8 app-debug.apk app-debug-sign.apk</span><br></pre></td></tr></table></figure></div></p>
-<p>  安装签名好的apk试试：<br>    <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">adb install app-debug-sign.apk</span><br></pre></td></tr></table></figure></div></p>
-<p>  得到执行v1签名的apk: app-debug-sign.apk , 安装后出现如下错误：<br>  <code>Performing Streamed Install adb: failed to install app-debug-sign.apk: Failure [-124: Failed parse during installPackageLI: Targeting R+ (version 30 and above) requires the resources.arsc of installed APKs to be stored uncompressed and aligned on a 4-byte boundary]</code></p>
-<p>这里需要做字节对齐，详细知识点点击此处了解<a href="https://developer.android.com/studio/command-line/zipalign">zipalign</a>，<a href="https://forum.xda-developers.com/t/tool-windows-batch-apk-zipalign-tool-v-2-0-23-05-2022.3791644/">分享一个下载链接</a><br>同样可以在博文这里下载<a href="Zipalign_Tool_v2.0.zip">zipalign</a>工具压缩包：<br>    执行字节对齐命令：<br>    <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">zipalign -p -f -v 4 app-debug-sign.apk app-debug-sign-zipalign.apk</span><br></pre></td></tr></table></figure></div></p>
-<p>确认对齐方式：<br>    <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">zipalign -c -v 4 app-debug-sign-zipalign.apk</span><br></pre></td></tr></table></figure></div></p>
-<p>或者执行写好的批量处理脚本&#x2F;Zipalign_Tool_v2.0&#x2F;zipalign.bat得到对齐后的apk再安装试试：<br>    <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">adb install app-debug-sign-zipalign.apk</span><br></pre></td></tr></table></figure></div></p>
-<p>安装<a href="app-debug-sign-zipalign.apk">app-debug-sign-zipalign.apk</a>又得到如下错误。。。难受：<br>    <code>Performing Streamed Install adb: failed to install app-debug-sign.apk: Failure [INSTALL_PARSE_FAILED_NO_CERTIFICATES: Scanning Failed.: No signature found in package of version 2 or newer for package com.droider.crackme0201]</code></p>
-<p>   因为是说<font color=red>Android R上不支持使用v1签名</font>了，要用v2或更高签名，那我这边找一台版本低于Android R的机器试试看，本地使用一台Android Q 的vivo X21A验证可以安装成功，直接点击注册可以单独上方提示成功了<br>   <div style="width:50%;margin:auto"><img data-src="/2022/10/16/analysis-of-android-program-decompile-and-resignature/Screenshot_20221019_224316.jpg" class=""></div></p>
-<h6 id="使用v2签名重新签名apk"><a href="#使用v2签名重新签名apk" class="headerlink" title="使用v2签名重新签名apk"></a>使用v2签名重新签名apk</h6><ul>
-<li>v2签名介绍<br>   上面使用v1签名没法在Android R以上的设备上运行，一种方法是开发应用的targetSdkVersion降级，这对于多数场景显然不可取，另外一种是使用Android R以上支持的v2签名，v2要使用ApkSigner工具进行签名</li>
-</ul>
-<p>   ApkSigner:内置在 Android SDK Build Tools 24.0.3 及更高的版本中,示例位置： sdk\build-tools\29.0.0\lib\apksigner.jar,本地提供一个<a href="apksigner.jar">apksigner.jar</a>的包</p>
-<p>   <a href="https://source.android.com/docs/security/features/apksigning/v2">官方文档介绍v2</a></p>
-<blockquote>
-<p> APK 签名方案 v2 是在 Android 7.0 (Nougat) 中引入的。为了使 APK 可在 Android 6.0 (Marshmallow) 及更低版本的设备上安装，应先使用 JAR 签名功能对 APK 进行签名，然后再使用 v2 方案对其进行签名。</p>
-</blockquote>
-<p>   <a href="https://developer.android.com/studio/command-line/zipalign">zipalign注意事项:</a></p>
-<blockquote>
-<p>注意：您必须在应用构建过程中的两个特定时间点之一使用 zipalign，具体在哪个时间点使用，取决于您所使用的应用签名工具：如果您使用的是 apksigner，只能在为 APK 文件签名之前执行 zipalign。如果您在使用 apksigner 为 APK 签名之后对 APK 做出了进一步更改，签名便会失效。<br>如果您使用的是 jarsigner，只能在为 APK 文件签名之后执行 zipalign。</p>
-</blockquote>
-<p>   **小结：v2签名顺序为v1签名-&gt;zipalign-&gt;v2签名</p>
-<ul>
-<li><p>使用v2签名<br>v2签名需要有一个自己的签名证书，我们使用keytool生成一个签名文件需要使用keytool自己生成一个,keytool在jdk目录：jdk1.8.0_31\jre\bin 下</p>
-<ul>
-<li>生成签名文件<a href="test.keystore">test.keystore</a></li>
-</ul>
-<p> 执行如下命令：<br>   <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">keytool -genkey -<span class="built_in">alias</span> testalias -keyalg RSA -keysize 2048 -validity 36500 		-keystore test.keystore</span><br></pre></td></tr></table></figure></div></p>
-<p> 然后输入如下信息：<br> <div style="width:50%;margin:auto"><img data-src="/2022/10/16/analysis-of-android-program-decompile-and-resignature/Screenshot_20221019_224316.jpg" class=""></div><br> 密码输入为：123456<br> 可以如下指令查看证书详情：<br> <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">keytool -list -v -keystore test.keystore  </span><br><span class="line">Enter keystore password: //输入密码，回车</span><br></pre></td></tr></table></figure></div></p>
-<ul>
-<li>执行v2签名指令</li>
-</ul>
-<p> 使用我们上面用v1做好zipalign对齐的apk执行如下命令：<br> <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">java -jar apksigner.jar sign --ks &#123;签名文件路径&#125; --ks-key-alias &#123;Key_alias&#125; --ks-pass pass:&#123;KeyStore_Password&#125; --key-pass pass:&#123;Key_Password&#125; --out &#123;V2签名后的APK文件&#125; &#123;对齐后的APK文件&#125;</span><br></pre></td></tr></table></figure></div></p>
-<p> 对应本地文件路径指令：<br> <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">java -jar apksigner.jar sign --ks test.keystore --ks-key-alias testalias --ks-pass pass:123456 --key-pass pass:123456 --out app-debug-sign_v2.apk app-debug-sign-zipalign.apk</span><br></pre></td></tr></table></figure></div></p>
-<p> 得到<a href="app-debug-sign_v2.apk">app-debug-sign_v2.apk</a>在Android R或以上设备运行成功</p>
-<p> 查看apk文件签名情况可以使用如下命令：<br> <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">java -jar apksigner.jar verify -v app-debug-sign_v2.apk</span><br><span class="line">Verifies</span><br><span class="line">Verified using v1 scheme (JAR signing): <span class="literal">true</span></span><br><span class="line">Verified using v2 scheme (APK Signature Scheme v2): <span class="literal">true</span></span><br><span class="line">Verified using v3 scheme (APK Signature Scheme v3): <span class="literal">true</span></span><br></pre></td></tr></table></figure></div></p>
-<ul>
-<li>进阶跳过v1签名步骤<br> 可以看到v2签名是兼容了v1的，但是这个操作好像比较繁琐，可以使用<a href="https://developer.android.com/studio/command-line/apksigner?hl=zh">apksigner.jar</a>文档里面的命令–v1-signing-enabled跳过v1签名的步骤，它可以兼容v1签名，一般会根据sdk版本它已经帮我们做好了v1兼容, 使用[app-debug-reverse.apk] (app-debug-reverse.apk  )做了zipalign对其的<a href="app-debug-reverse-zipalign.apk">app-debug-reverse-zipalign.apk</a> 直接v2签名后得到<a href="app-debug-reverse-zipalign-sign_v2.apk">app-debug-reverse-zipalign-sign_v2.apk</a></li>
-</ul>
-  <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line"> // 字节对齐</span><br><span class="line"> zipalign -p -f -v 4 app-debug-reverse.apk app-debug-reverse-zipalign.apk</span><br><span class="line"> // 签名</span><br><span class="line">java -jar apksigner.jar sign --ks test.keystore --ks-key-alias testalias --ks-pass pass:123456 --key-pass pass:123456 --v1-signing-enabled <span class="literal">true</span> --out app-debug-reverse-zipalign-sign_v2.apk app-debug-reverse-zipalign.apk</span><br></pre></td></tr></table></figure></div>
- <br>
- 查看直接使用v2签名的apk支持签名情况：
- 
- <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">java -jar apksigner.jar verify -v app-debug-reverse-zipalign-sign_v2.apk</span><br><span class="line">Verifies</span><br><span class="line">Verified using v1 scheme (JAR signing): <span class="literal">true</span></span><br><span class="line">Verified using v2 scheme (APK Signature Scheme v2): <span class="literal">true</span></span><br><span class="line">Verified using v3 scheme (APK Signature Scheme v3): <span class="literal">true</span></span><br><span class="line">Number of signers: 1</span><br></pre></td></tr></table></figure></div>
- <br>
- 可以看到这个apk没有手动进行v1签名，但是它是支持v1的，完结!</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Android</category>
-        <category>逆向</category>
-        <category>《Android软件安全权威指南》实践笔记</category>
-      </categories>
-      <tags>
-        <tag>Android逆向</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Android文件格式</title>
     <url>/2022/10/25/android_file_format/</url>
     <content><![CDATA[<p>本文记录Android中的一些文件格式</p>
@@ -315,6 +186,135 @@ IDA Pro从6.8版本支持补丁修改内容，点击Edit->Patch Program-> Change
       </tags>
   </entry>
   <entry>
+    <title>Android程序分析&amp;反编译重签名</title>
+    <url>/2022/10/16/analysis-of-android-program-decompile-and-resignature/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>此系列为读《Android软件安全权威指南》学习笔记以及自己的一些实践心得体会记录</p>
+<h2 id="实践环境"><a href="#实践环境" class="headerlink" title="实践环境"></a>实践环境</h2><blockquote>
+<p><strong>操作系统</strong>： Windows</p>
+</blockquote>
+<h2 id="常用逆向分析工具"><a href="#常用逆向分析工具" class="headerlink" title="常用逆向分析工具"></a>常用逆向分析工具</h2><p><a href="https://bitbucket.org/JesusFreke/smali/downloads/">backsmail</a>: DEX文件的反编译与回编译工具，提供了smail语法格式，使DEX文件的修改可以基于smail汇编指令完成。ApkTool底层就是使用它提供的dexlib库来生成smail反汇编文件的</p>
+<p><a href="">dex2jar</a>:DEX文件转换成jar工具，对使用dex2jar转换的jar包，可以通过jd-gui等工具查看Java代码。</p>
+<p><a href="https://www.sweetscape.com/010editor/">010Editor</a>: 是一款专业的文本和十六进制编辑器，其旨在快速轻松地编辑计算机上任何文件的内容.在逆向分析场景中，可以使用此软件内置的脚本语言编写二进制文件格式模板，进行文件格式的分析与测试。</p>
+<h2 id="搭建源码分析环境"><a href="#搭建源码分析环境" class="headerlink" title="搭建源码分析环境"></a>搭建源码分析环境</h2><p>在逆向分析场景中，需要分析Android系统源码，例如：</p>
+<ul>
+<li>测试最新的Android源码刷入自己的rom</li>
+<li>定制Android系统，打造专属脱壳工具</li>
+<li>编译Android内核并刷机，来绕过反调试</li>
+<li>动态调试Android系统源码<br>目前我这边比较方便的是使用Windows10系统来编译，其他系统环境有需要后续补充</li>
+</ul>
+<h3 id="Window10-Android源码编译"><a href="#Window10-Android源码编译" class="headerlink" title="Window10 Android源码编译"></a>Window10 Android源码编译</h3><p>Windows系统默认不支持源码编译，只有Linux和Mac上支持编译，所以Windows要有Linux或者Ubuntu的系统环境，这里使用DockerDestop For Windows来搞定系统环境，可以粗略理解为它是一个这些环境工具的大集成软件<br><a href="https://zhuanlan.zhihu.com/p/302961875">安装介绍文档参考</a><br><a href="https://blog.51cto.com/u_15060464/3872849">Windows docker镜像位置修改</a><br><a href="https://www.bilibili.com/read/cv10164178">实战Ubuntu20编译Android8.0系统源码</a></p>
+<h2 id="破解第一个Android程序"><a href="#破解第一个Android程序" class="headerlink" title="破解第一个Android程序"></a>破解第一个Android程序</h2><p>本文使用到的Android项目源码<a href="Crackme0201.7z">Crackme0201</a><br>整体代码如下：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">public class MainActivity extends AppCompatActivity &#123;</span><br><span class="line">private EditText edit_userName;</span><br><span class="line">private EditText edit_sn;</span><br><span class="line">private Button btn_register;</span><br><span class="line"></span><br><span class="line">@Override</span><br><span class="line">public void onCreate(Bundle savedInstanceState) &#123;</span><br><span class="line">    super.onCreate(savedInstanceState);</span><br><span class="line">    setContentView(R.layout.activity_main);</span><br><span class="line">    setTitle(R.string.unregister);</span><br><span class="line">    edit_userName = (EditText) findViewById(R.id.edit_username);</span><br><span class="line">    edit_sn = (EditText) findViewById(R.id.edit_sn);</span><br><span class="line">    btn_register = (Button) findViewById(R.id.button_register);</span><br><span class="line">    btn_register.setOnClickListener(new <span class="function"><span class="title">OnClickListener</span></span>() &#123;</span><br><span class="line"></span><br><span class="line">        public void onClick(View v) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!checkSN(edit_userName.getText().toString().trim(),</span><br><span class="line">                    edit_sn.getText().toString().trim())) &#123;</span><br><span class="line">                Toast.makeText(MainActivity.this,</span><br><span class="line">                        R.string.unsuccessed, Toast.LENGTH_SHORT).show();</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                Toast.makeText(MainActivity.this,</span><br><span class="line">                        R.string.successed, Toast.LENGTH_SHORT).show();</span><br><span class="line">                btn_register.setEnabled(<span class="literal">false</span>);</span><br><span class="line">                setTitle(R.string.registered);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private boolean checkSN(String userName, String sn) &#123;</span><br><span class="line">    try &#123;</span><br><span class="line">        <span class="keyword">if</span> ((userName == null) || (userName.length() == 0))</span><br><span class="line">            <span class="built_in">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span> ((sn == null) || (sn.length() != 16))</span><br><span class="line">            <span class="built_in">return</span> <span class="literal">false</span>;</span><br><span class="line">        MessageDigest digest = MessageDigest.getInstance(<span class="string">&quot;MD5&quot;</span>);</span><br><span class="line">        digest.reset();</span><br><span class="line">        digest.update(userName.getBytes());</span><br><span class="line">        byte[] bytes = digest.digest();</span><br><span class="line">        String hexstr = toHexString(bytes, <span class="string">&quot;&quot;</span>);</span><br><span class="line">        StringBuilder sb = new StringBuilder();</span><br><span class="line">        <span class="keyword">for</span> (int i = 0; i &lt; hexstr.length(); i += 2) &#123;</span><br><span class="line">            sb.append(hexstr.charAt(i));</span><br><span class="line">        &#125;</span><br><span class="line">        String userSN = sb.toString();</span><br><span class="line">        Log.d(<span class="string">&quot;checkSN&quot;</span>, hexstr);</span><br><span class="line">        Log.d(<span class="string">&quot;checkSN&quot;</span>, userSN);</span><br><span class="line">        <span class="keyword">if</span> (!userSN.equalsIgnoreCase(sn))</span><br><span class="line">            <span class="built_in">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125; catch (NoSuchAlgorithmException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">        <span class="built_in">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private static String toHexString(byte[] bytes, String separator) &#123;</span><br><span class="line">    StringBuilder hexString = new StringBuilder();</span><br><span class="line">    <span class="keyword">for</span> (byte b : bytes) &#123;</span><br><span class="line">        String hex = Integer.toHexString(0xFF &amp; b);</span><br><span class="line">        <span class="keyword">if</span>(hex.length() == 1)&#123;</span><br><span class="line">            hexString.append(<span class="string">&#x27;0&#x27;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        hexString.append(hex).append(separator);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">return</span> hexString.toString();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>运行界面：</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/16/analysis-of-android-program-decompile-and-resignature/Screenshot_2022-10-23-16-22-32-266_com.droider.crackme0201.jpg" class=""></div>
+
+<p>点击按钮后让应用变为显示已注册的title</p>
+<h3 id="破解思路顺序"><a href="#破解思路顺序" class="headerlink" title="破解思路顺序"></a>破解思路顺序</h3><ul>
+<li>使用ApkTool反编译Apk,生成smail格式的反汇编代码</li>
+<li>阅读smail代码理解程序运行机制，找到突破口，修改代码</li>
+<li>使用ApkTool重新编译生成APK文件并对其签名</li>
+<li>运行测试，反复以上步骤已达到破解</li>
+</ul>
+<h3 id="反编译Apk"><a href="#反编译Apk" class="headerlink" title="反编译Apk"></a>反编译Apk</h3><h4 id="安装ApkTool"><a href="#安装ApkTool" class="headerlink" title="安装ApkTool"></a>安装ApkTool</h4><p><a href="https://bitbucket.org/iBotPeaches/apktool/downloads/">ApkTool</a>: 提供了Android Apk的反编译与回编译功能，让Apk重新打包成为可能。</p>
+<p>下载对应系统的Apktool jar并下载对应系统的<a href="https://ibotpeaches.github.io/Apktool/install/">运行时包装脚本</a><br>把这两个文件放到同一目录，然后添加到环境变量中</p>
+<p>打开cmd输入：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">apktool -version</span><br></pre></td></tr></table></figure></div>
+<br>
+看到对应的版本，表示已经安装添加环境变量成功
+<img data-src="/2022/10/16/analysis-of-android-program-decompile-and-resignature/Snipaste_2022-10-10_15-43-23.png" class="">
+
+<h4 id="使用Apktool反编译Apk"><a href="#使用Apktool反编译Apk" class="headerlink" title="使用Apktool反编译Apk"></a>使用Apktool反编译Apk</h4><p>生成一个<a href="app-debug.apk">debug</a>版本的apk当前apk的目录下使用cmd窗口执行</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">apktool d ./app-debug.apk -o outdir</span><br></pre></td></tr></table></figure></div>
+<br>
+会生成outdir文件夹，里面包含apk的反编译文件，接下来要分析里面的文件
+<img data-src="/2022/10/16/analysis-of-android-program-decompile-and-resignature/Snipaste_2022-10-10_16-36-53.png" class="">
+
+<h3 id="分析apk文件"><a href="#分析apk文件" class="headerlink" title="分析apk文件"></a>分析apk文件</h3><p>点击注册按钮会提示:无效用户名和注册码 这个地方和判断注册的关键逻辑有关，我们可以使用这个作为突破口。</p>
+<h4 id="内部反编译文件顺序检索"><a href="#内部反编译文件顺序检索" class="headerlink" title="内部反编译文件顺序检索"></a>内部反编译文件顺序检索</h4><ul>
+<li><p>这个字符可以硬编码在代码里，也可以写在res\values\string.xml里面。打包的时候string.xml的字符串被加密存储在resource.arsc文件并保存到apk包中，如果apk被反编译，这个文件也就解密了。从解密文件夹的res\values\string.xml找到改文案提示的name为unsuccessed</p>
+</li>
+<li><p>Android程序中，string.xml中的字符串资源都在gen&#x2F;R.java的String类中标识，每个字符串都有唯一的int类型索引值。<a href="https://blog.csdn.net/baidu_31093133/article/details/113700629">android studio找不到R.java文件怎么办？</a></p>
+</li>
+<li><p>使用Apktool反编译apk后这些int值保存在和string.xml同级的public.xml中。outdir&#x2F;res&#x2F;values&#x2F;public.xml中通过name为unsuccessed找到id为0x7f0d0028</p>
+</li>
+</ul>
+<h4 id="全局搜索顺序检索"><a href="#全局搜索顺序检索" class="headerlink" title="全局搜索顺序检索"></a>全局搜索顺序检索</h4><p>如果是Mac和Linux可以使用命令 grep来查找</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">grep -r <span class="string">&quot;无效用户名或注册码&quot;</span> outdir/</span><br><span class="line">// 找到name为unsuccessed</span><br><span class="line">grep -r unsuccessed outdir/</span><br><span class="line">// 找到<span class="built_in">id</span>为0x7f0d0028 并且还在outdir/smali/com/crackme0201/MainActivity<span class="variable">$1</span>.smail中使用过</span><br><span class="line"></span><br><span class="line"><span class="comment"># virtual methods</span></span><br><span class="line">.method public onClick(Landroid/view/View;)V</span><br><span class="line">.....</span><br><span class="line">.line 58</span><br><span class="line">    iget-object v0, p0, Lcom/droider/crackme0201/MainActivity<span class="variable">$1</span>;-&gt;this<span class="variable">$0</span>:Lcom/droider/crackme0201/MainActivity;</span><br><span class="line"></span><br><span class="line">    const v2, 0x7f0d0028</span><br><span class="line"></span><br><span class="line">    invoke-static &#123;v0, v2, v1&#125;, Landroid/widget/Toast;-&gt;makeText(Landroid/content/Context;II)Landroid/widget/Toast;</span><br><span class="line"></span><br><span class="line">    move-result-object v0</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+<br>
+这个代码在onClick方法里面调用，接下来需要阅读这个smali方法里面的代码，需要对照写的java代码来参考看
+
+<h4 id="分析smali指令代码"><a href="#分析smali指令代码" class="headerlink" title="分析smali指令代码"></a>分析smali指令代码</h4><div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># virtual methods</span></span><br><span class="line">.method public onClick(Landroid/view/View;)V</span><br><span class="line">    .locals 3</span><br><span class="line">    .param p1, <span class="string">&quot;v&quot;</span>    <span class="comment"># Landroid/view/View;</span></span><br><span class="line"></span><br><span class="line">    .line 56</span><br><span class="line">	<span class="comment"># iget-object获取MainActivity实例的引用。-&gt;this$0是内部类MainActivity$1中的一个synthetic字段,存储的是父类MainActivity的引用。</span></span><br><span class="line">    iget-object v0, p0, Lcom/droider/crackme0201/MainActivity<span class="variable">$1</span>;-&gt;this<span class="variable">$0</span>:Lcom/droider/crackme0201/MainActivity;</span><br><span class="line">	<span class="comment"># 获取edit_userName这个EditText的引用（待确认）</span></span><br><span class="line">    invoke-static &#123;v0&#125;, Lcom/droider/crackme0201/MainActivity;-&gt;access<span class="variable">$000</span>(Lcom/droider/crackme0201/MainActivity;)Landroid/widget/EditText;</span><br><span class="line">	<span class="comment"># 把edit_userName的引用放到v1寄存器里面存储</span></span><br><span class="line">    move-result-object v1</span><br><span class="line">	<span class="comment"># edit_userName执行getText()方法获得Editable对应引用</span></span><br><span class="line">    invoke-virtual &#123;v1&#125;, Landroid/widget/EditText;-&gt;getText()Landroid/text/Editable;</span><br><span class="line">	<span class="comment"># 把v1寄存器里面赋值Editable对应引用</span></span><br><span class="line">    move-result-object v1</span><br><span class="line">	<span class="comment"># Editable对应引用执行toString方法</span></span><br><span class="line">    invoke-virtual &#123;v1&#125;, Ljava/lang/Object;-&gt;toString()Ljava/lang/String;</span><br><span class="line">	<span class="comment"># v1寄存器赋值存储edit_userName的String值</span></span><br><span class="line">    move-result-object v1</span><br><span class="line">	<span class="comment"># String值调用trim方法</span></span><br><span class="line">    invoke-virtual &#123;v1&#125;, Ljava/lang/String;-&gt;trim()Ljava/lang/String;</span><br><span class="line">	<span class="comment"># v1寄存器存储trim后的string值</span></span><br><span class="line">    move-result-object v1</span><br><span class="line"></span><br><span class="line">    iget-object v2, p0, Lcom/droider/crackme0201/MainActivity<span class="variable">$1</span>;-&gt;this<span class="variable">$0</span>:Lcom/droider/crackme0201/MainActivity;</span><br><span class="line"></span><br><span class="line">    .line 57</span><br><span class="line">	<span class="comment"># 获取edit_sn这个EditText的引用（待确认）</span></span><br><span class="line">    invoke-static &#123;v2&#125;, Lcom/droider/crackme0201/MainActivity;-&gt;access<span class="variable">$100</span>(Lcom/droider/crackme0201/MainActivity;)Landroid/widget/EditText;</span><br><span class="line">	<span class="comment"># 把edit_sn的引用放到v2寄存器里面存储</span></span><br><span class="line">    move-result-object v2</span><br><span class="line">	<span class="comment"># edit_sn执行getText()方法获得Editable对应引用</span></span><br><span class="line">    invoke-virtual &#123;v2&#125;, Landroid/widget/EditText;-&gt;getText()Landroid/text/Editable;</span><br><span class="line">	<span class="comment"># 把v2寄存器里面赋值Editable对应引用</span></span><br><span class="line">    move-result-object v2</span><br><span class="line">	<span class="comment"># Editable对应引用执行toString方法</span></span><br><span class="line">    invoke-virtual &#123;v2&#125;, Ljava/lang/Object;-&gt;toString()Ljava/lang/String;</span><br><span class="line">	<span class="comment"># v2寄存器赋值存储edit_sn的String值</span></span><br><span class="line">    move-result-object v2</span><br><span class="line">	<span class="comment"># String值调用trim方法</span></span><br><span class="line">    invoke-virtual &#123;v2&#125;, Ljava/lang/String;-&gt;trim()Ljava/lang/String;</span><br><span class="line">	<span class="comment"># v2寄存器存储trim后的string值</span></span><br><span class="line">    move-result-object v2</span><br><span class="line"></span><br><span class="line">    .line 56</span><br><span class="line">	<span class="comment"># 执行checkSN方法</span></span><br><span class="line">    invoke-static &#123;v0, v1, v2&#125;, Lcom/droider/crackme0201/MainActivity;-&gt;access<span class="variable">$200</span>(Lcom/droider/crackme0201/MainActivity;Ljava/lang/String;Ljava/lang/String;)Z</span><br><span class="line">	<span class="comment"># vo寄存器存储checkSN方法的值</span></span><br><span class="line">    move-result v0</span><br><span class="line">	</span><br><span class="line">    const/4 v1, 0x0</span><br><span class="line">	<span class="comment"># 对v0寄存器进行判断为真(不为0/为true)就跳转到cond_0</span></span><br><span class="line">    if-nez v0, :cond_0</span><br><span class="line"></span><br><span class="line">    .line 58</span><br><span class="line">	<span class="comment"># if-nez v0判断为false，因为checkSN取反</span></span><br><span class="line">    iget-object v0, p0, Lcom/droider/crackme0201/MainActivity<span class="variable">$1</span>;-&gt;this<span class="variable">$0</span>:Lcom/droider/crackme0201/MainActivity;</span><br><span class="line">	<span class="comment"># 把unsuccessed的值赋给v2寄存器</span></span><br><span class="line">    const v2, 0x7f0d0028</span><br><span class="line">	<span class="comment"># 执行Toast的makeText方法</span></span><br><span class="line">    invoke-static &#123;v0, v2, v1&#125;, Landroid/widget/Toast;-&gt;makeText(Landroid/content/Context;II)Landroid/widget/Toast;</span><br><span class="line">	<span class="comment"># 获得Toast对象引用赋值给v0</span></span><br><span class="line">    move-result-object v0</span><br><span class="line"></span><br><span class="line">    .line 59</span><br><span class="line">	<span class="comment"># 执行Toast的show方法</span></span><br><span class="line">    invoke-virtual &#123;v0&#125;, Landroid/widget/Toast;-&gt;show()V</span><br><span class="line"></span><br><span class="line">    goto :goto_0</span><br><span class="line"></span><br><span class="line">    .line 61</span><br><span class="line">    :cond_0</span><br><span class="line">	<span class="comment"># 以下为!checkSN()整体为false后要走的注册成功代码逻辑，下面每条执行分析参考上面的分析</span></span><br><span class="line">    iget-object v0, p0, Lcom/droider/crackme0201/MainActivity<span class="variable">$1</span>;-&gt;this<span class="variable">$0</span>:Lcom/droider/crackme0201/MainActivity;</span><br><span class="line"></span><br><span class="line">    const v2, 0x7f0d0025</span><br><span class="line"></span><br><span class="line">    invoke-static &#123;v0, v2, v1&#125;, Landroid/widget/Toast;-&gt;makeText(Landroid/content/Context;II)Landroid/widget/Toast;</span><br><span class="line"></span><br><span class="line">    move-result-object v0</span><br><span class="line"></span><br><span class="line">    .line 62</span><br><span class="line">    invoke-virtual &#123;v0&#125;, Landroid/widget/Toast;-&gt;show()V</span><br><span class="line"></span><br><span class="line">    .line 63</span><br><span class="line">    iget-object v0, p0, Lcom/droider/crackme0201/MainActivity<span class="variable">$1</span>;-&gt;this<span class="variable">$0</span>:Lcom/droider/crackme0201/MainActivity;</span><br><span class="line"></span><br><span class="line">    invoke-static &#123;v0&#125;, Lcom/droider/crackme0201/MainActivity;-&gt;access<span class="variable">$300</span>(Lcom/droider/crackme0201/MainActivity;)Landroid/widget/Button;</span><br><span class="line"></span><br><span class="line">    move-result-object v0</span><br><span class="line"></span><br><span class="line">    invoke-virtual &#123;v0, v1&#125;, Landroid/widget/Button;-&gt;setEnabled(Z)V</span><br><span class="line"></span><br><span class="line">    .line 64</span><br><span class="line">    iget-object v0, p0, Lcom/droider/crackme0201/MainActivity<span class="variable">$1</span>;-&gt;this<span class="variable">$0</span>:Lcom/droider/crackme0201/MainActivity;</span><br><span class="line"></span><br><span class="line">    const v1, 0x7f0d0021</span><br><span class="line"></span><br><span class="line">    invoke-virtual &#123;v0, v1&#125;, Lcom/droider/crackme0201/MainActivity;-&gt;setTitle(I)V</span><br><span class="line"></span><br><span class="line">    .line 66</span><br><span class="line">    :goto_0</span><br><span class="line">    return-void</span><br><span class="line">.end method</span><br></pre></td></tr></table></figure></div>
+
+<p>如上面的分析，弹出注册成功提示标识注册成功,所以主要修改line 57里面的<font color=red>if-nez v0, :cond_0</font>这条指令就好。</p>
+<ul>
+<li>if-nez：Dalvik指令集中的一个条件跳转指令</li>
+<li>if-eqz: 与ifnez相反，表示比较结果为0（为false）时就跳转</li>
+</ul>
+<p><strong>分析结论</strong>：把line 57里面的<font color=red>if-nez v0, :cond_0</font>修改为<font color=red>if-eqz v0, :cond_0</font>就好，修改后要重新进行打包。</p>
+<h4 id="重新编译Apk文件并签名"><a href="#重新编译Apk文件并签名" class="headerlink" title="重新编译Apk文件并签名"></a>重新编译Apk文件并签名</h4><h5 id="重新回编apk"><a href="#重新回编apk" class="headerlink" title="重新回编apk"></a>重新回编apk</h5><p>回编命令：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">apktool b outdir</span><br></pre></td></tr></table></figure></div>
+<br>
+
+<p>如果成功在&#x2F;outdir&#x2F;dist&#x2F;app-debug.apk重新生成的apk在这个位置，注意这个apk是没有签名的，需要签名后安装</p>
+<h5 id="签名回编的apk"><a href="#签名回编的apk" class="headerlink" title="签名回编的apk"></a>签名回编的apk</h5><h6 id="使用v1签名重新签名apk"><a href="#使用v1签名重新签名apk" class="headerlink" title="使用v1签名重新签名apk"></a>使用v1签名重新签名apk</h6><p>  所需文件：<br>  signapk.jar，testkey.x509.pem,testkey.pk8，网上搜可以从android系统源码中获取，我从网上找了份，可以<a href="signapk.jar.zip">点击链接</a>直接下载这三个文件</p>
+<p>  执行签名命令：<br>      <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">java -jar signapk.jar testkey.x509.pem testkey.pk8 app-debug.apk app-debug-sign.apk</span><br></pre></td></tr></table></figure></div></p>
+<p>  安装签名好的apk试试：<br>    <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">adb install app-debug-sign.apk</span><br></pre></td></tr></table></figure></div></p>
+<p>  得到执行v1签名的apk: app-debug-sign.apk , 安装后出现如下错误：<br>  <code>Performing Streamed Install adb: failed to install app-debug-sign.apk: Failure [-124: Failed parse during installPackageLI: Targeting R+ (version 30 and above) requires the resources.arsc of installed APKs to be stored uncompressed and aligned on a 4-byte boundary]</code></p>
+<p>这里需要做字节对齐，详细知识点点击此处了解<a href="https://developer.android.com/studio/command-line/zipalign">zipalign</a>，<a href="https://forum.xda-developers.com/t/tool-windows-batch-apk-zipalign-tool-v-2-0-23-05-2022.3791644/">分享一个下载链接</a><br>同样可以在博文这里下载<a href="Zipalign_Tool_v2.0.zip">zipalign</a>工具压缩包：<br>    执行字节对齐命令：<br>    <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">zipalign -p -f -v 4 app-debug-sign.apk app-debug-sign-zipalign.apk</span><br></pre></td></tr></table></figure></div></p>
+<p>确认对齐方式：<br>    <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">zipalign -c -v 4 app-debug-sign-zipalign.apk</span><br></pre></td></tr></table></figure></div></p>
+<p>或者执行写好的批量处理脚本&#x2F;Zipalign_Tool_v2.0&#x2F;zipalign.bat得到对齐后的apk再安装试试：<br>    <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">adb install app-debug-sign-zipalign.apk</span><br></pre></td></tr></table></figure></div></p>
+<p>安装<a href="app-debug-sign-zipalign.apk">app-debug-sign-zipalign.apk</a>又得到如下错误。。。难受：<br>    <code>Performing Streamed Install adb: failed to install app-debug-sign.apk: Failure [INSTALL_PARSE_FAILED_NO_CERTIFICATES: Scanning Failed.: No signature found in package of version 2 or newer for package com.droider.crackme0201]</code></p>
+<p>   因为是说<font color=red>Android R上不支持使用v1签名</font>了，要用v2或更高签名，那我这边找一台版本低于Android R的机器试试看，本地使用一台Android Q 的vivo X21A验证可以安装成功，直接点击注册可以单独上方提示成功了<br>   <div style="width:50%;margin:auto"><img data-src="/2022/10/16/analysis-of-android-program-decompile-and-resignature/Screenshot_20221019_224316.jpg" class=""></div></p>
+<h6 id="使用v2签名重新签名apk"><a href="#使用v2签名重新签名apk" class="headerlink" title="使用v2签名重新签名apk"></a>使用v2签名重新签名apk</h6><ul>
+<li>v2签名介绍<br>   上面使用v1签名没法在Android R以上的设备上运行，一种方法是开发应用的targetSdkVersion降级，这对于多数场景显然不可取，另外一种是使用Android R以上支持的v2签名，v2要使用ApkSigner工具进行签名</li>
+</ul>
+<p>   ApkSigner:内置在 Android SDK Build Tools 24.0.3 及更高的版本中,示例位置： sdk\build-tools\29.0.0\lib\apksigner.jar,本地提供一个<a href="apksigner.jar">apksigner.jar</a>的包</p>
+<p>   <a href="https://source.android.com/docs/security/features/apksigning/v2">官方文档介绍v2</a></p>
+<blockquote>
+<p> APK 签名方案 v2 是在 Android 7.0 (Nougat) 中引入的。为了使 APK 可在 Android 6.0 (Marshmallow) 及更低版本的设备上安装，应先使用 JAR 签名功能对 APK 进行签名，然后再使用 v2 方案对其进行签名。</p>
+</blockquote>
+<p>   <a href="https://developer.android.com/studio/command-line/zipalign">zipalign注意事项:</a></p>
+<blockquote>
+<p>注意：您必须在应用构建过程中的两个特定时间点之一使用 zipalign，具体在哪个时间点使用，取决于您所使用的应用签名工具：如果您使用的是 apksigner，只能在为 APK 文件签名之前执行 zipalign。如果您在使用 apksigner 为 APK 签名之后对 APK 做出了进一步更改，签名便会失效。<br>如果您使用的是 jarsigner，只能在为 APK 文件签名之后执行 zipalign。</p>
+</blockquote>
+<p>   **小结：v2签名顺序为v1签名-&gt;zipalign-&gt;v2签名</p>
+<ul>
+<li><p>使用v2签名<br>v2签名需要有一个自己的签名证书，我们使用keytool生成一个签名文件需要使用keytool自己生成一个,keytool在jdk目录：jdk1.8.0_31\jre\bin 下</p>
+<ul>
+<li>生成签名文件<a href="test.keystore">test.keystore</a></li>
+</ul>
+<p> 执行如下命令：<br>   <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">keytool -genkey -<span class="built_in">alias</span> testalias -keyalg RSA -keysize 2048 -validity 36500 		-keystore test.keystore</span><br></pre></td></tr></table></figure></div></p>
+<p> 然后输入如下信息：<br> <div style="width:50%;margin:auto"><img data-src="/2022/10/16/analysis-of-android-program-decompile-and-resignature/Screenshot_20221019_224316.jpg" class=""></div><br> 密码输入为：123456<br> 可以如下指令查看证书详情：<br> <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">keytool -list -v -keystore test.keystore  </span><br><span class="line">Enter keystore password: //输入密码，回车</span><br></pre></td></tr></table></figure></div></p>
+<ul>
+<li>执行v2签名指令</li>
+</ul>
+<p> 使用我们上面用v1做好zipalign对齐的apk执行如下命令：<br> <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">java -jar apksigner.jar sign --ks &#123;签名文件路径&#125; --ks-key-alias &#123;Key_alias&#125; --ks-pass pass:&#123;KeyStore_Password&#125; --key-pass pass:&#123;Key_Password&#125; --out &#123;V2签名后的APK文件&#125; &#123;对齐后的APK文件&#125;</span><br></pre></td></tr></table></figure></div></p>
+<p> 对应本地文件路径指令：<br> <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">java -jar apksigner.jar sign --ks test.keystore --ks-key-alias testalias --ks-pass pass:123456 --key-pass pass:123456 --out app-debug-sign_v2.apk app-debug-sign-zipalign.apk</span><br></pre></td></tr></table></figure></div></p>
+<p> 得到<a href="app-debug-sign_v2.apk">app-debug-sign_v2.apk</a>在Android R或以上设备运行成功</p>
+<p> 查看apk文件签名情况可以使用如下命令：<br> <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">java -jar apksigner.jar verify -v app-debug-sign_v2.apk</span><br><span class="line">Verifies</span><br><span class="line">Verified using v1 scheme (JAR signing): <span class="literal">true</span></span><br><span class="line">Verified using v2 scheme (APK Signature Scheme v2): <span class="literal">true</span></span><br><span class="line">Verified using v3 scheme (APK Signature Scheme v3): <span class="literal">true</span></span><br></pre></td></tr></table></figure></div></p>
+<ul>
+<li>进阶跳过v1签名步骤<br> 可以看到v2签名是兼容了v1的，但是这个操作好像比较繁琐，可以使用<a href="https://developer.android.com/studio/command-line/apksigner?hl=zh">apksigner.jar</a>文档里面的命令–v1-signing-enabled跳过v1签名的步骤，它可以兼容v1签名，一般会根据sdk版本它已经帮我们做好了v1兼容, 使用[app-debug-reverse.apk] (app-debug-reverse.apk  )做了zipalign对其的<a href="app-debug-reverse-zipalign.apk">app-debug-reverse-zipalign.apk</a> 直接v2签名后得到<a href="app-debug-reverse-zipalign-sign_v2.apk">app-debug-reverse-zipalign-sign_v2.apk</a></li>
+</ul>
+  <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line"> // 字节对齐</span><br><span class="line"> zipalign -p -f -v 4 app-debug-reverse.apk app-debug-reverse-zipalign.apk</span><br><span class="line"> // 签名</span><br><span class="line">java -jar apksigner.jar sign --ks test.keystore --ks-key-alias testalias --ks-pass pass:123456 --key-pass pass:123456 --v1-signing-enabled <span class="literal">true</span> --out app-debug-reverse-zipalign-sign_v2.apk app-debug-reverse-zipalign.apk</span><br></pre></td></tr></table></figure></div>
+ <br>
+ 查看直接使用v2签名的apk支持签名情况：
+ 
+ <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">java -jar apksigner.jar verify -v app-debug-reverse-zipalign-sign_v2.apk</span><br><span class="line">Verifies</span><br><span class="line">Verified using v1 scheme (JAR signing): <span class="literal">true</span></span><br><span class="line">Verified using v2 scheme (APK Signature Scheme v2): <span class="literal">true</span></span><br><span class="line">Verified using v3 scheme (APK Signature Scheme v3): <span class="literal">true</span></span><br><span class="line">Number of signers: 1</span><br></pre></td></tr></table></figure></div>
+ <br>
+ 可以看到这个apk没有手动进行v1签名，但是它是支持v1的，完结!</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>逆向</category>
+        <category>《Android软件安全权威指南》实践笔记</category>
+      </categories>
+      <tags>
+        <tag>Android逆向</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>服务器搭建Git服务端</title>
     <url>/2022/10/13/setup-git-server/</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>此文符合自己购买了Vps服务器，並且需要自己存放相应的一些私有代碼，不想放置到公共服务器上，自己存放使用代碼用。如果是公司要多人协同使用，那需要其他的方式了。</p>
@@ -356,196 +356,6 @@ IDA Pro从6.8版本支持补丁修改内容，点击Edit->Patch Program-> Change
       </categories>
       <tags>
         <tag>Git</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>工具网站合集</title>
-    <url>/2022/10/16/tool-website-collection/</url>
-    <content><![CDATA[<h2 id="图片"><a href="#图片" class="headerlink" title="图片"></a>图片</h2><ul>
-<li>生成图片<ul>
-<li>生成好看的渐变背景图: <a href="https://coolbackgrounds.io/">Cool Backgrounds</a></li>
-<li>生成类似 mac 风格的代码图片: <a href="https://carbon.now.sh/">carbon </a></li>
-<li>生成随机图片<a href="https://unsplash.com/developers">Unsplash Source</a></li>
-<li>在线 logo 随机生成工具<a href="http://emblemmatic.org/markmaker/#/">MarkMaker</a></li>
-</ul>
-</li>
-<li>阿里巴巴矢量图标库:<a href="http://www.iconfont.cn/plus">iconfont</a></li>
-<li>壁纸: <a href="https://www.desktoppr.co/wallpapers">desktoppr</a></li>
-<li>Material icons图标:<a href="https://material.io/tools/icons/?style=baseline">Material icons</a></li>
-<li>批量编辑图片的所有工具。包括压缩图片，剪裁图片，图片加水印，转化至jpg图片等等:<a href="https://www.iloveimg.com/zh-cn">Iloveimg</a></li>
-<li>任意GIF添加字幕<a href="https://www.pkgif.net/">pkgif</a></li>
-<li>一键下载当前网页的所有图片<a href="https://appscyborg.com/image-cyborg/">ImageCyborg</a></li>
-<li>免费正版图片资源<ul>
-<li><a href="https://unsplash.com/">https://unsplash.com/</a></li>
-<li><a href="https://pixabay.com/zh/">https://pixabay.com/zh/</a></li>
-<li><a href="http://www.piqsels.com/zh">http://www.piqsels.com/zh</a></li>
-</ul>
-</li>
-<li>一键背景消除：<a href="https://www.remove.bg/zh">https://www.remove.bg/zh</a></li>
-<li>证件照换底色：<a href="https://www.bgconverter.com/">https://www.bgconverter.com/</a></li>
-<li>将照片变成艺术照：<a href="https://deepart.io/">https://deepart.io/</a></li>
-<li>图片压缩：<ul>
-<li><a href="https://tinypng.com/">https://tinypng.com/</a></li>
-<li><a href="http://zhitu.isux.us/">智图</a></li>
-<li><a href="https://tinypng.com/">Tinypng</a></li>
-<li>SVG图形压缩优化:<a href="https://jakearchibald.github.io/svgomg/">SVGOMG</a></li>
-</ul>
-</li>
-<li>电影截图：<a href="https://film-grab.com/">https://film-grab.com/</a></li>
-<li>样机图片大全：<a href="https://mockupplanet.com/">https://mockupplanet.com/</a></li>
-</ul>
-<h2 id="视频"><a href="#视频" class="headerlink" title="视频"></a>视频</h2><ul>
-<li>快手、抖音、秒拍视频解析：<a href="https://www.parsevideo.com/">https://www.parsevideo.com/</a></li>
-</ul>
-<h2 id="书籍"><a href="#书籍" class="headerlink" title="书籍"></a>书籍</h2><ul>
-<li>鸠摩搜书：<a href="https://www.jiumodiary.com/">https://www.jiumodiary.com/</a></li>
-<li>免费古籍图书：<a href="https://new.shuge.org/">https://new.shuge.org/</a></li>
-</ul>
-<h2 id="纪录片"><a href="#纪录片" class="headerlink" title="纪录片"></a>纪录片</h2><ul>
-<li>纪录片天地：<a href="http://www.jlpcn.net/">http://www.jlpcn.net/</a></li>
-<li>纪录片之家：<a href="http://www.jlpdq.com/">http://www.jlpdq.com/</a></li>
-</ul>
-<h2 id="网络-amp-安全"><a href="#网络-amp-安全" class="headerlink" title="网络&amp;安全"></a>网络&amp;安全</h2><ul>
-<li>查看IP伪装信息：<a href="https://whoer.net/zh">https://whoer.net/zh</a></li>
-<li>查看密码泄漏：<a href="https://haveibeenpwned.com/">https://haveibeenpwned.com/</a></li>
-<li>网站公用账号：<a href="http://bugmenot.com/">http://bugmenot.com/</a></li>
-<li>检查网站状态：<a href="https://zijian.aliyun.com/">https://zijian.aliyun.com/</a></li>
-<li>免费uptime监控：<a href="https://uptimerobot.com/">https://uptimerobot.com/</a></li>
-<li>whois查询：<a href="https://whois.aliyun.com/">https://whois.aliyun.com</a></li>
-<li>IP ping、路由查询：<a href="https://tools.ipip.net/newping.php">https://tools.ipip.net/newping.php</a></li>
-<li>网页速度测试：<a href="https://developers.google.com/speed/pagespeed/insights/">https://developers.google.com/speed/pagespeed/insights/</a></li>
-<li>域名低价查询：<a href="https://tld-list.com/">https://tld-list.com</a></li>
-<li>DNS<ul>
-<li>ip域名查询：<a href="https://site.ip138.com/">https://site.ip138.com</a></li>
-<li><a href="https://securitytrails.com/">https://securitytrails.com/</a></li>
-</ul>
-</li>
-</ul>
-<h2 id="AI"><a href="#AI" class="headerlink" title="AI"></a>AI</h2><ul>
-<li>AI论文生成工具：<a href="https://essay.1ts.fun/">https://essay.1ts.fun</a></li>
-<li>AI写作机器人：<a href="https://www.giiso.com/#/">https://www.giiso.com/#/</a></li>
-<li>AI自动上色：<a href="https://petalica-paint.pixiv.dev/index_zh.html">https://petalica-paint.pixiv.dev/index_zh.html</a></li>
-<li>AI写对联：<a href="http://duilian.msra.cn/app/couplet.aspx">http://duilian.msra.cn/app/couplet.aspx</a></li>
-<li>AI生成照片：<a href="http://www.seeprettyface.com/index.html">http://www.seeprettyface.com/index.html</a></li>
-<li>AI做PPT：<a href="https://www.beautiful.ai/">https://www.beautiful.ai/</a></li>
-</ul>
-<h2 id="编程"><a href="#编程" class="headerlink" title="编程"></a>编程</h2><ul>
-<li>以动画的形式让你学习 git: <a href="https://learngitbranching.js.org/?locale=zh_CN">Learn Git Branching</a></li>
-<li>代码格式美化：<a href="https://carbon.now.sh/">https://carbon.now.sh/</a></li>
-<li>编程语言性能对比：<a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/">https://benchmarksgame-team.pages.debian.net/benchmarksgame/</a></li>
-<li>代码分享: [Ubuntu pastebin] (<a href="https://paste.ubuntu.com/">https://paste.ubuntu.com/</a>)</li>
-<li>在线代码编辑:<ul>
-<li><a href="https://codepen.io/">Codepen</a></li>
-<li><a href="http://jsbin.com/">Jsbin</a></li>
-<li>在线写React,自动编译,有代码提示: <a href="https://codesandbox.io/">CodeSandbox</a></li>
-</ul>
-</li>
-<li>正则可视化: <a href="https://regexper.com/">Regexper</a></li>
-<li>正则表达式测试: <a href="https://regex101.com/">Regex101</a></li>
-<li>数据结构，算法可视化: <a href="https://visualgo.net/">Visualgo</a></li>
-<li>测试网站速度，优化性能: <a href="https://pagespeed.web.dev/">PageSpeed Insights</a></li>
-<li>生成类似代码注释里那种佛祖的代码: <a href="http://asciiflow.com/">Asciiflow</a></li>
-<li>生成 nginx 配置: <a href="https://www.digitalocean.com/community/tools/nginx?global.app.lang=zhCN">NGINXConfig</a></li>
-<li>开发变量命名神器: <a href="https://unbug.github.io/codelf/">codeif</a></li>
-<li>常用速查表，快速查询各类框架和库的常用方法，很实用：<a href="https://devhints.io/">devhints</a></li>
-<li>快速查询各类框架和周边库的中文文档: <a href="https://docschina.org/">印记中文</a></li>
-<li>搜索网站是否有不安全的头部 header 设置，并会评分: <a href="https://securityheaders.com/">Security Headers</a></li>
-<li>各种编程语言 API 文档<a href="https://devdocs.io/">devdocs</a></li>
-</ul>
-<h2 id="在线软件"><a href="#在线软件" class="headerlink" title="在线软件"></a>在线软件</h2><ul>
-<li>简历<ul>
-<li>简历模板: <a href="https://www.hloom.com/resume-examples/">resume-examples</a></li>
-<li>生成简历: <a href="https://enhancv.com/">Enhancv</a></li>
-</ul>
-</li>
-<li>在线绘画：<a href="https://www.autodraw.com/">https://www.autodraw.com/</a></li>
-<li>在线流程图：<a href="https://app.diagrams.net/">https://app.diagrams.net/</a></li>
-<li>在线画流程图，思维导图、UI原型图等等<ul>
-<li><a href="https://www.processon.com/">ProcessOn</a></li>
-<li><a href="https://www.draw.io/">draw.io</a></li>
-</ul>
-</li>
-<li>在线PS：<a href="https://www.photopea.com/">https://www.photopea.com/</a></li>
-<li>在线文件转换，支持 200 多种文件格式转换<a href="https://www.alltoall.net/">alltoall</a></li>
-<li>能够在线使用ps，ai，office，xmind，火狐浏览器等多个应用的网站<a href="https://uzer.me/">uzer</a></li>
-<li>在线图表制作工具<a href="https://infogram.com/">infogram</a></li>
-<li>极简大纲笔记，一键生成思维导图:<a href="http://mubu.com/home">幕布</a></li>
-<li>在线制作 PPT:<ul>
-<li><a href="https://ppt.baomitu.com/">声享</a></li>
-<li>人工智能 ppt 模板创建:<a href="https://about.beautiful.ai/">Beautiful.Ai</a></li>
-<li>ppt 模板<a href="http://www.koppt.cn/index">KOPPT</a></li>
-</ul>
-</li>
-<li>在线生成二维码:<a href="https://cli.im/">草料二维码</a></li>
-<li>PDF压缩，PDF转PPT，Word，Excel等等都可以直接通过这个页面实现:<a href="https://smallpdf.com/">Smallpdf</a></li>
-</ul>
-<h2 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h2><ul>
-<li>配色：<ul>
-<li><a href="https://colorhunt.co/">https://colorhunt.co/</a></li>
-<li><a href="https://color.adobe.com/zh/create/color-wheel">https://color.adobe.com/zh/create/color-wheel</a></li>
-<li><a href="https://www.webdesignrankings.com/resources/lolcolors/">https://www.webdesignrankings.com/resources/lolcolors/</a></li>
-</ul>
-</li>
-</ul>
-<h2 id="合集类工具网站"><a href="#合集类工具网站" class="headerlink" title="合集类工具网站"></a>合集类工具网站</h2><ul>
-<li><a href="https://shadiao.pro/">https://shadiao.pro/</a></li>
-</ul>
-<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ul>
-<li>免费微信消息推送(Server酱)：<a href="http://sc.ftqq.com/">http://sc.ftqq.com/</a></li>
-<li>中国老海报（国内被墙）：<a href="https://chineseposters.net/">https://chineseposters.net/</a></li>
-<li>查看软件替代品：<a href="https://alternativeto.net/">https://alternativeto.net/</a></li>
-<li>渣男说话艺术：<a href="https://lovelive.tools/">https://lovelive.tools/</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>工具箱</category>
-        <category>工具网站</category>
-      </categories>
-      <tags>
-        <tag>工具网站</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Android源码查看</title>
-    <url>/2022/10/21/view_android_source_code/</url>
-    <content><![CDATA[<p>查看Android源码的方式分为在线网页查看和下载到本地查看，本文对这些方式做记录，依据使用场景来遍历分析查看Android源码内容</p>
-<h2 id="Windows下载查看Android源码"><a href="#Windows下载查看Android源码" class="headerlink" title="Windows下载查看Android源码"></a>Windows下载查看Android源码</h2><h3 id="安装工具软件"><a href="#安装工具软件" class="headerlink" title="安装工具软件"></a>安装工具软件</h3><p>其他环境下下载源码使用repo这个工具，Windows里面搞repo有点麻烦，这里直接才有git clone的方式拷贝源码的每个子工程项目。在Windows端下载Android源码需要确认安装以下软件，列出我本地实践的一些软件以及版本,这两个工具软件安装不做记录</p>
-<blockquote>
-<p><a href="https://git-scm.com/download/win">Git</a>: 2.9.0</p>
-<p><a href="https://www.python.org/downloads/">Python</a>：3.9</p>
-<p>我下载的android_10_0_0_r47版本，占用磁盘硬盘293G，建议搞一个空盘有300G的空间</p>
-</blockquote>
-<h3 id="配置下载源码"><a href="#配置下载源码" class="headerlink" title="配置下载源码"></a>配置下载源码</h3><ul>
-<li><p>本地新建文件夹结构<br>我在此处建的文件夹结构如下：</p>
-<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">F:\Android\AOSP\clone_tsinghua</span><br></pre></td></tr></table></figure></div>
-</br></li>
-<li><p>克隆清华大学开源软件镜像（不用google的避免要翻墙）</p>
-<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://aosp.tuna.tsinghua.edu.cn/platform/manifest.git</span><br></pre></td></tr></table></figure></div>
-</br></li>
-<li><p>选择一个下载版本</p>
-<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> manifest</span><br><span class="line">// 切换到android-10.0.0_r47分支</span><br><span class="line">git checkout -b android-10.0.0_r47 origin/android-10.0.0_r47</span><br></pre></td></tr></table></figure></div>
-</br>
-可以在manifest目录执行``git branch -a``查看所有的分支情况选择一个需要的版本源码，同意可以在[官网](https://source.android.google.cn/docs/setup/about/build-numbers#source-code-tags-and-builds)找到对应的标记版本
-</li>
-<li><p>编写python下载脚本<br>文件结构新建python文件：F:\Android\AOSP\clone_tsinghua\downloadAOSP.py, 提供一个可下载：<a href="downloadAOSP.py">downloadAOSP.py</a></p>
-<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">import xml.dom.minidom</span><br><span class="line">import os</span><br><span class="line">from subprocess import call</span><br><span class="line">// 注意地址中使用的是 <span class="string">&quot;/&quot;</span> 而不是<span class="string">&quot;\&quot;, unbantu 跟Windows 是有区别的</span></span><br><span class="line"><span class="string">// 代码保存位置，硬盘建议大于100G</span></span><br><span class="line"><span class="string">rootdir = &quot;</span>F:/Android/AOSP/android_10_0_0_r47<span class="string">&quot;</span></span><br><span class="line"><span class="string">// git 安装路径，可以使用 where git 命令查看</span></span><br><span class="line"><span class="string">git = &quot;</span>D:/Program Files/Git/bin/git.exe<span class="string">&quot;</span></span><br><span class="line"><span class="string">// 刚刚切换 android-10.0.0_r47 目录下的defaul.xml 文件</span></span><br><span class="line"><span class="string">dom = xml.dom.minidom.parse(&quot;</span>F:/Android/AOSP/clone_tsinghua/manifest/default.xml<span class="string">&quot;)</span></span><br><span class="line"><span class="string">root = dom.documentElement</span></span><br><span class="line"><span class="string">// clone 清华大学镜像库地址</span></span><br><span class="line"><span class="string">prefix = git + &quot;</span> <span class="built_in">clone</span> https://mirrors.tuna.tsinghua.edu.cn/git/AOSP/<span class="string">&quot;</span></span><br><span class="line"><span class="string">suffix = &quot;</span>.git<span class="string">&quot;</span></span><br><span class="line"><span class="string">if not os.path.exists(rootdir):</span></span><br><span class="line"><span class="string">    os.mkdir(rootdir)</span></span><br><span class="line"><span class="string"> </span></span><br><span class="line"><span class="string">for node in root.getElementsByTagName(&quot;</span>project<span class="string">&quot;):</span></span><br><span class="line"><span class="string">    os.chdir(rootdir)</span></span><br><span class="line"><span class="string">    d = node.getAttribute(&quot;</span>path<span class="string">&quot;)</span></span><br><span class="line"><span class="string">    last = d.rfind(&quot;</span>/<span class="string">&quot;)</span></span><br><span class="line"><span class="string">    if last != -1:</span></span><br><span class="line"><span class="string">        d = rootdir + &quot;</span>/<span class="string">&quot; + d[:last]</span></span><br><span class="line"><span class="string">        if not os.path.exists(d):</span></span><br><span class="line"><span class="string">            os.makedirs(d)</span></span><br><span class="line"><span class="string">        os.chdir(d)</span></span><br><span class="line"><span class="string">    cmd = prefix + node.getAttribute(&quot;</span>name<span class="string">&quot;) + suffix</span></span><br><span class="line"><span class="string">    call(cmd)</span></span><br></pre></td></tr></table></figure></div>
-</br>
-</li>
-<li><p>执行下载脚本开始下载<br>双击downloadAOSP.py或者在终端执行<code>python downloadAOSP.py</code>即可开始下载对应的Android源码了。注意脚本里面的路径要换成你的电脑环境的路径</p>
-</li>
-</ul>
-<p>下载完成后建议配合sourceinsight查看源码，可以链接代码。下载下来后占用磁盘将近300G，太大了，还有使用在线网页的方式可以更加轻量的查看源码</p>
-<h2 id="网页查看Android源码"><a href="#网页查看Android源码" class="headerlink" title="网页查看Android源码"></a>网页查看Android源码</h2><p>如果不想占用过多的磁盘，并且在线查看源码，推荐几个好用的在线网站。</p>
-<h3 id="Google官方源码地址"><a href="#Google官方源码地址" class="headerlink" title="Google官方源码地址"></a>Google官方源码地址</h3><p>如果方便翻墙，可以使用Google官方的源码查看网站：<a href="cs.android.com">cs.android.com</a>,版本信息很全，而且带有修改记录，源码阅读神奇</p>
-<h3 id="Android-Ref"><a href="#Android-Ref" class="headerlink" title="Android Ref"></a>Android Ref</h3><p><a href="androidxref.com">Android Ref</a> 国外网站，但是无需翻墙访问，但是只支持到Android9的源码</p>
-<h3 id="Android-中文社区"><a href="#Android-中文社区" class="headerlink" title="Android 中文社区"></a>Android 中文社区</h3><p><a href="www.androidos.net.cn/sourcecode">Android 中文社区</a>是国内网站，支持到Android10</p>
-]]></content>
-      <categories>
-        <category>Android</category>
-        <category>源码</category>
-      </categories>
-      <tags>
-        <tag>Android源码</tag>
       </tags>
   </entry>
   <entry>
@@ -2362,6 +2172,196 @@ Ljava/lang/String; ：字段类型
       </categories>
       <tags>
         <tag>Android逆向</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>工具网站合集</title>
+    <url>/2022/10/16/tool-website-collection/</url>
+    <content><![CDATA[<h2 id="图片"><a href="#图片" class="headerlink" title="图片"></a>图片</h2><ul>
+<li>生成图片<ul>
+<li>生成好看的渐变背景图: <a href="https://coolbackgrounds.io/">Cool Backgrounds</a></li>
+<li>生成类似 mac 风格的代码图片: <a href="https://carbon.now.sh/">carbon </a></li>
+<li>生成随机图片<a href="https://unsplash.com/developers">Unsplash Source</a></li>
+<li>在线 logo 随机生成工具<a href="http://emblemmatic.org/markmaker/#/">MarkMaker</a></li>
+</ul>
+</li>
+<li>阿里巴巴矢量图标库:<a href="http://www.iconfont.cn/plus">iconfont</a></li>
+<li>壁纸: <a href="https://www.desktoppr.co/wallpapers">desktoppr</a></li>
+<li>Material icons图标:<a href="https://material.io/tools/icons/?style=baseline">Material icons</a></li>
+<li>批量编辑图片的所有工具。包括压缩图片，剪裁图片，图片加水印，转化至jpg图片等等:<a href="https://www.iloveimg.com/zh-cn">Iloveimg</a></li>
+<li>任意GIF添加字幕<a href="https://www.pkgif.net/">pkgif</a></li>
+<li>一键下载当前网页的所有图片<a href="https://appscyborg.com/image-cyborg/">ImageCyborg</a></li>
+<li>免费正版图片资源<ul>
+<li><a href="https://unsplash.com/">https://unsplash.com/</a></li>
+<li><a href="https://pixabay.com/zh/">https://pixabay.com/zh/</a></li>
+<li><a href="http://www.piqsels.com/zh">http://www.piqsels.com/zh</a></li>
+</ul>
+</li>
+<li>一键背景消除：<a href="https://www.remove.bg/zh">https://www.remove.bg/zh</a></li>
+<li>证件照换底色：<a href="https://www.bgconverter.com/">https://www.bgconverter.com/</a></li>
+<li>将照片变成艺术照：<a href="https://deepart.io/">https://deepart.io/</a></li>
+<li>图片压缩：<ul>
+<li><a href="https://tinypng.com/">https://tinypng.com/</a></li>
+<li><a href="http://zhitu.isux.us/">智图</a></li>
+<li><a href="https://tinypng.com/">Tinypng</a></li>
+<li>SVG图形压缩优化:<a href="https://jakearchibald.github.io/svgomg/">SVGOMG</a></li>
+</ul>
+</li>
+<li>电影截图：<a href="https://film-grab.com/">https://film-grab.com/</a></li>
+<li>样机图片大全：<a href="https://mockupplanet.com/">https://mockupplanet.com/</a></li>
+</ul>
+<h2 id="视频"><a href="#视频" class="headerlink" title="视频"></a>视频</h2><ul>
+<li>快手、抖音、秒拍视频解析：<a href="https://www.parsevideo.com/">https://www.parsevideo.com/</a></li>
+</ul>
+<h2 id="书籍"><a href="#书籍" class="headerlink" title="书籍"></a>书籍</h2><ul>
+<li>鸠摩搜书：<a href="https://www.jiumodiary.com/">https://www.jiumodiary.com/</a></li>
+<li>免费古籍图书：<a href="https://new.shuge.org/">https://new.shuge.org/</a></li>
+</ul>
+<h2 id="纪录片"><a href="#纪录片" class="headerlink" title="纪录片"></a>纪录片</h2><ul>
+<li>纪录片天地：<a href="http://www.jlpcn.net/">http://www.jlpcn.net/</a></li>
+<li>纪录片之家：<a href="http://www.jlpdq.com/">http://www.jlpdq.com/</a></li>
+</ul>
+<h2 id="网络-amp-安全"><a href="#网络-amp-安全" class="headerlink" title="网络&amp;安全"></a>网络&amp;安全</h2><ul>
+<li>查看IP伪装信息：<a href="https://whoer.net/zh">https://whoer.net/zh</a></li>
+<li>查看密码泄漏：<a href="https://haveibeenpwned.com/">https://haveibeenpwned.com/</a></li>
+<li>网站公用账号：<a href="http://bugmenot.com/">http://bugmenot.com/</a></li>
+<li>检查网站状态：<a href="https://zijian.aliyun.com/">https://zijian.aliyun.com/</a></li>
+<li>免费uptime监控：<a href="https://uptimerobot.com/">https://uptimerobot.com/</a></li>
+<li>whois查询：<a href="https://whois.aliyun.com/">https://whois.aliyun.com</a></li>
+<li>IP ping、路由查询：<a href="https://tools.ipip.net/newping.php">https://tools.ipip.net/newping.php</a></li>
+<li>网页速度测试：<a href="https://developers.google.com/speed/pagespeed/insights/">https://developers.google.com/speed/pagespeed/insights/</a></li>
+<li>域名低价查询：<a href="https://tld-list.com/">https://tld-list.com</a></li>
+<li>DNS<ul>
+<li>ip域名查询：<a href="https://site.ip138.com/">https://site.ip138.com</a></li>
+<li><a href="https://securitytrails.com/">https://securitytrails.com/</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="AI"><a href="#AI" class="headerlink" title="AI"></a>AI</h2><ul>
+<li>AI论文生成工具：<a href="https://essay.1ts.fun/">https://essay.1ts.fun</a></li>
+<li>AI写作机器人：<a href="https://www.giiso.com/#/">https://www.giiso.com/#/</a></li>
+<li>AI自动上色：<a href="https://petalica-paint.pixiv.dev/index_zh.html">https://petalica-paint.pixiv.dev/index_zh.html</a></li>
+<li>AI写对联：<a href="http://duilian.msra.cn/app/couplet.aspx">http://duilian.msra.cn/app/couplet.aspx</a></li>
+<li>AI生成照片：<a href="http://www.seeprettyface.com/index.html">http://www.seeprettyface.com/index.html</a></li>
+<li>AI做PPT：<a href="https://www.beautiful.ai/">https://www.beautiful.ai/</a></li>
+</ul>
+<h2 id="编程"><a href="#编程" class="headerlink" title="编程"></a>编程</h2><ul>
+<li>以动画的形式让你学习 git: <a href="https://learngitbranching.js.org/?locale=zh_CN">Learn Git Branching</a></li>
+<li>代码格式美化：<a href="https://carbon.now.sh/">https://carbon.now.sh/</a></li>
+<li>编程语言性能对比：<a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/">https://benchmarksgame-team.pages.debian.net/benchmarksgame/</a></li>
+<li>代码分享: [Ubuntu pastebin] (<a href="https://paste.ubuntu.com/">https://paste.ubuntu.com/</a>)</li>
+<li>在线代码编辑:<ul>
+<li><a href="https://codepen.io/">Codepen</a></li>
+<li><a href="http://jsbin.com/">Jsbin</a></li>
+<li>在线写React,自动编译,有代码提示: <a href="https://codesandbox.io/">CodeSandbox</a></li>
+</ul>
+</li>
+<li>正则可视化: <a href="https://regexper.com/">Regexper</a></li>
+<li>正则表达式测试: <a href="https://regex101.com/">Regex101</a></li>
+<li>数据结构，算法可视化: <a href="https://visualgo.net/">Visualgo</a></li>
+<li>测试网站速度，优化性能: <a href="https://pagespeed.web.dev/">PageSpeed Insights</a></li>
+<li>生成类似代码注释里那种佛祖的代码: <a href="http://asciiflow.com/">Asciiflow</a></li>
+<li>生成 nginx 配置: <a href="https://www.digitalocean.com/community/tools/nginx?global.app.lang=zhCN">NGINXConfig</a></li>
+<li>开发变量命名神器: <a href="https://unbug.github.io/codelf/">codeif</a></li>
+<li>常用速查表，快速查询各类框架和库的常用方法，很实用：<a href="https://devhints.io/">devhints</a></li>
+<li>快速查询各类框架和周边库的中文文档: <a href="https://docschina.org/">印记中文</a></li>
+<li>搜索网站是否有不安全的头部 header 设置，并会评分: <a href="https://securityheaders.com/">Security Headers</a></li>
+<li>各种编程语言 API 文档<a href="https://devdocs.io/">devdocs</a></li>
+</ul>
+<h2 id="在线软件"><a href="#在线软件" class="headerlink" title="在线软件"></a>在线软件</h2><ul>
+<li>简历<ul>
+<li>简历模板: <a href="https://www.hloom.com/resume-examples/">resume-examples</a></li>
+<li>生成简历: <a href="https://enhancv.com/">Enhancv</a></li>
+</ul>
+</li>
+<li>在线绘画：<a href="https://www.autodraw.com/">https://www.autodraw.com/</a></li>
+<li>在线流程图：<a href="https://app.diagrams.net/">https://app.diagrams.net/</a></li>
+<li>在线画流程图，思维导图、UI原型图等等<ul>
+<li><a href="https://www.processon.com/">ProcessOn</a></li>
+<li><a href="https://www.draw.io/">draw.io</a></li>
+</ul>
+</li>
+<li>在线PS：<a href="https://www.photopea.com/">https://www.photopea.com/</a></li>
+<li>在线文件转换，支持 200 多种文件格式转换<a href="https://www.alltoall.net/">alltoall</a></li>
+<li>能够在线使用ps，ai，office，xmind，火狐浏览器等多个应用的网站<a href="https://uzer.me/">uzer</a></li>
+<li>在线图表制作工具<a href="https://infogram.com/">infogram</a></li>
+<li>极简大纲笔记，一键生成思维导图:<a href="http://mubu.com/home">幕布</a></li>
+<li>在线制作 PPT:<ul>
+<li><a href="https://ppt.baomitu.com/">声享</a></li>
+<li>人工智能 ppt 模板创建:<a href="https://about.beautiful.ai/">Beautiful.Ai</a></li>
+<li>ppt 模板<a href="http://www.koppt.cn/index">KOPPT</a></li>
+</ul>
+</li>
+<li>在线生成二维码:<a href="https://cli.im/">草料二维码</a></li>
+<li>PDF压缩，PDF转PPT，Word，Excel等等都可以直接通过这个页面实现:<a href="https://smallpdf.com/">Smallpdf</a></li>
+</ul>
+<h2 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h2><ul>
+<li>配色：<ul>
+<li><a href="https://colorhunt.co/">https://colorhunt.co/</a></li>
+<li><a href="https://color.adobe.com/zh/create/color-wheel">https://color.adobe.com/zh/create/color-wheel</a></li>
+<li><a href="https://www.webdesignrankings.com/resources/lolcolors/">https://www.webdesignrankings.com/resources/lolcolors/</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="合集类工具网站"><a href="#合集类工具网站" class="headerlink" title="合集类工具网站"></a>合集类工具网站</h2><ul>
+<li><a href="https://shadiao.pro/">https://shadiao.pro/</a></li>
+</ul>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ul>
+<li>免费微信消息推送(Server酱)：<a href="http://sc.ftqq.com/">http://sc.ftqq.com/</a></li>
+<li>中国老海报（国内被墙）：<a href="https://chineseposters.net/">https://chineseposters.net/</a></li>
+<li>查看软件替代品：<a href="https://alternativeto.net/">https://alternativeto.net/</a></li>
+<li>渣男说话艺术：<a href="https://lovelive.tools/">https://lovelive.tools/</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>工具箱</category>
+        <category>工具网站</category>
+      </categories>
+      <tags>
+        <tag>工具网站</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Android源码查看</title>
+    <url>/2022/10/21/view_android_source_code/</url>
+    <content><![CDATA[<p>查看Android源码的方式分为在线网页查看和下载到本地查看，本文对这些方式做记录，依据使用场景来遍历分析查看Android源码内容</p>
+<h2 id="Windows下载查看Android源码"><a href="#Windows下载查看Android源码" class="headerlink" title="Windows下载查看Android源码"></a>Windows下载查看Android源码</h2><h3 id="安装工具软件"><a href="#安装工具软件" class="headerlink" title="安装工具软件"></a>安装工具软件</h3><p>其他环境下下载源码使用repo这个工具，Windows里面搞repo有点麻烦，这里直接才有git clone的方式拷贝源码的每个子工程项目。在Windows端下载Android源码需要确认安装以下软件，列出我本地实践的一些软件以及版本,这两个工具软件安装不做记录</p>
+<blockquote>
+<p><a href="https://git-scm.com/download/win">Git</a>: 2.9.0</p>
+<p><a href="https://www.python.org/downloads/">Python</a>：3.9</p>
+<p>我下载的android_10_0_0_r47版本，占用磁盘硬盘293G，建议搞一个空盘有300G的空间</p>
+</blockquote>
+<h3 id="配置下载源码"><a href="#配置下载源码" class="headerlink" title="配置下载源码"></a>配置下载源码</h3><ul>
+<li><p>本地新建文件夹结构<br>我在此处建的文件夹结构如下：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">F:\Android\AOSP\clone_tsinghua</span><br></pre></td></tr></table></figure></div>
+</br></li>
+<li><p>克隆清华大学开源软件镜像（不用google的避免要翻墙）</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://aosp.tuna.tsinghua.edu.cn/platform/manifest.git</span><br></pre></td></tr></table></figure></div>
+</br></li>
+<li><p>选择一个下载版本</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> manifest</span><br><span class="line">// 切换到android-10.0.0_r47分支</span><br><span class="line">git checkout -b android-10.0.0_r47 origin/android-10.0.0_r47</span><br></pre></td></tr></table></figure></div>
+</br>
+可以在manifest目录执行``git branch -a``查看所有的分支情况选择一个需要的版本源码，同意可以在[官网](https://source.android.google.cn/docs/setup/about/build-numbers#source-code-tags-and-builds)找到对应的标记版本
+</li>
+<li><p>编写python下载脚本<br>文件结构新建python文件：F:\Android\AOSP\clone_tsinghua\downloadAOSP.py, 提供一个可下载：<a href="downloadAOSP.py">downloadAOSP.py</a></p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">import xml.dom.minidom</span><br><span class="line">import os</span><br><span class="line">from subprocess import call</span><br><span class="line">// 注意地址中使用的是 <span class="string">&quot;/&quot;</span> 而不是<span class="string">&quot;\&quot;, unbantu 跟Windows 是有区别的</span></span><br><span class="line"><span class="string">// 代码保存位置，硬盘建议大于100G</span></span><br><span class="line"><span class="string">rootdir = &quot;</span>F:/Android/AOSP/android_10_0_0_r47<span class="string">&quot;</span></span><br><span class="line"><span class="string">// git 安装路径，可以使用 where git 命令查看</span></span><br><span class="line"><span class="string">git = &quot;</span>D:/Program Files/Git/bin/git.exe<span class="string">&quot;</span></span><br><span class="line"><span class="string">// 刚刚切换 android-10.0.0_r47 目录下的defaul.xml 文件</span></span><br><span class="line"><span class="string">dom = xml.dom.minidom.parse(&quot;</span>F:/Android/AOSP/clone_tsinghua/manifest/default.xml<span class="string">&quot;)</span></span><br><span class="line"><span class="string">root = dom.documentElement</span></span><br><span class="line"><span class="string">// clone 清华大学镜像库地址</span></span><br><span class="line"><span class="string">prefix = git + &quot;</span> <span class="built_in">clone</span> https://mirrors.tuna.tsinghua.edu.cn/git/AOSP/<span class="string">&quot;</span></span><br><span class="line"><span class="string">suffix = &quot;</span>.git<span class="string">&quot;</span></span><br><span class="line"><span class="string">if not os.path.exists(rootdir):</span></span><br><span class="line"><span class="string">    os.mkdir(rootdir)</span></span><br><span class="line"><span class="string"> </span></span><br><span class="line"><span class="string">for node in root.getElementsByTagName(&quot;</span>project<span class="string">&quot;):</span></span><br><span class="line"><span class="string">    os.chdir(rootdir)</span></span><br><span class="line"><span class="string">    d = node.getAttribute(&quot;</span>path<span class="string">&quot;)</span></span><br><span class="line"><span class="string">    last = d.rfind(&quot;</span>/<span class="string">&quot;)</span></span><br><span class="line"><span class="string">    if last != -1:</span></span><br><span class="line"><span class="string">        d = rootdir + &quot;</span>/<span class="string">&quot; + d[:last]</span></span><br><span class="line"><span class="string">        if not os.path.exists(d):</span></span><br><span class="line"><span class="string">            os.makedirs(d)</span></span><br><span class="line"><span class="string">        os.chdir(d)</span></span><br><span class="line"><span class="string">    cmd = prefix + node.getAttribute(&quot;</span>name<span class="string">&quot;) + suffix</span></span><br><span class="line"><span class="string">    call(cmd)</span></span><br></pre></td></tr></table></figure></div>
+</br>
+</li>
+<li><p>执行下载脚本开始下载<br>双击downloadAOSP.py或者在终端执行<code>python downloadAOSP.py</code>即可开始下载对应的Android源码了。注意脚本里面的路径要换成你的电脑环境的路径</p>
+</li>
+</ul>
+<p>下载完成后建议配合sourceinsight查看源码，可以链接代码。下载下来后占用磁盘将近300G，太大了，还有使用在线网页的方式可以更加轻量的查看源码</p>
+<h2 id="网页查看Android源码"><a href="#网页查看Android源码" class="headerlink" title="网页查看Android源码"></a>网页查看Android源码</h2><p>如果不想占用过多的磁盘，并且在线查看源码，推荐几个好用的在线网站。</p>
+<h3 id="Google官方源码地址"><a href="#Google官方源码地址" class="headerlink" title="Google官方源码地址"></a>Google官方源码地址</h3><p>如果方便翻墙，可以使用Google官方的源码查看网站：<a href="cs.android.com">cs.android.com</a>,版本信息很全，而且带有修改记录，源码阅读神奇</p>
+<h3 id="Android-Ref"><a href="#Android-Ref" class="headerlink" title="Android Ref"></a>Android Ref</h3><p><a href="androidxref.com">Android Ref</a> 国外网站，但是无需翻墙访问，但是只支持到Android9的源码</p>
+<h3 id="Android-中文社区"><a href="#Android-中文社区" class="headerlink" title="Android 中文社区"></a>Android 中文社区</h3><p><a href="www.androidos.net.cn/sourcecode">Android 中文社区</a>是国内网站，支持到Android10</p>
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>源码</category>
+      </categories>
+      <tags>
+        <tag>Android源码</tag>
       </tags>
   </entry>
   <entry>
