@@ -53,7 +53,7 @@
 <meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_16-13-19.png">
 <meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_16-17-53.png">
 <meta property="article:published_time" content="2022-10-24T23:18:29.000Z">
-<meta property="article:modified_time" content="2022-10-30T06:07:06.599Z">
+<meta property="article:modified_time" content="2022-10-30T14:56:32.821Z">
 <meta property="article:author" content="Lyman">
 <meta property="article:tag" content="Android逆向">
 <meta name="twitter:card" content="summary">
@@ -281,7 +281,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-30 14:07:06" itemprop="dateModified" datetime="2022-10-30T14:07:06+08:00">2022-10-30</time>
+      <time title="修改时间：2022-10-30 22:56:32" itemprop="dateModified" datetime="2022-10-30T22:56:32+08:00">2022-10-30</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -366,13 +366,14 @@
 <h3 id="APK的生成流程"><a href="#APK的生成流程" class="headerlink" title="APK的生成流程"></a>APK的生成流程</h3><p>下图为AndroidStudio最新的APK生成流程图</p>
 <div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-25_16-26-01.png" class=""></div>
 总结起来如下：
- 编译文件：
-  * Java/aidl文件转换为class文件：目录在/app/build/intermediates/javac/下面，主要使用到的命令为javac
-  * 资源文件：存在APP的res目录下的资源文件使用aapt工具，生成R.java，并且生成一个resource.arsc形成一个索引表，通过resource id访问
-* 生成Dex文件：使用dx工具将class文件转换为dex文件
-* 打包生成APK：通过apkbuilder工具将所有的文件打包到apk中
-* 签名对齐APK：对应于进行签名并进行对齐操作，主要用到zipalign工具。对齐是将APK包中的所有资源距离文件起始偏移4字节，这样通过内存映射访问apk文件速度会更快，减少运行时内存的使用。
 
+<ul>
+<li>Java&#x2F;aidl文件转换为class文件：目录在&#x2F;app&#x2F;build&#x2F;intermediates&#x2F;javac&#x2F;下面，主要使用到的命令为javac</li>
+<li>资源文件：存在APP的res目录下的资源文件使用aapt工具，生成R.java，并且生成一个resource.arsc形成一个索引表，通过resource id访问</li>
+<li>生成Dex文件：使用dx工具将class文件转换为dex文件</li>
+<li>打包生成APK：通过apkbuilder工具将所有的文件打包到apk中</li>
+<li>签名对齐APK：对应于进行签名并进行对齐操作，主要用到zipalign工具。对齐是将APK包中的所有资源距离文件起始偏移4字节，这样通过内存映射访问apk文件速度会更快，减少运行时内存的使用。</li>
+</ul>
 <h3 id="APK的安装过程"><a href="#APK的安装过程" class="headerlink" title="APK的安装过程"></a>APK的安装过程</h3><p>列举出如下四种APK安装方式</p>
 <h4 id="系统开机时安装"><a href="#系统开机时安装" class="headerlink" title="系统开机时安装"></a>系统开机时安装</h4><p>由PackageManagerService服务完成。这个服务在启动的时候会扫描&#x2F;system&#x2F;app下的apk重新安装</p>
 <h4 id="Android市场应用安装"><a href="#Android市场应用安装" class="headerlink" title="Android市场应用安装"></a>Android市场应用安装</h4><p>国外有Play商店，国内每个产商有自己的市场app。应用商店app如果在&#x2F;system&#x2F;app下，安装过程可以自动完成；否则会弹出软件安全相关的界面，引导安装</p>
