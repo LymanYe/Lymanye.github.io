@@ -359,6 +359,196 @@ IDA Pro从6.8版本支持补丁修改内容，点击Edit->Patch Program-> Change
       </tags>
   </entry>
   <entry>
+    <title>工具网站合集</title>
+    <url>/2022/10/16/tool-website-collection/</url>
+    <content><![CDATA[<h2 id="图片"><a href="#图片" class="headerlink" title="图片"></a>图片</h2><ul>
+<li>生成图片<ul>
+<li>生成好看的渐变背景图: <a href="https://coolbackgrounds.io/">Cool Backgrounds</a></li>
+<li>生成类似 mac 风格的代码图片: <a href="https://carbon.now.sh/">carbon </a></li>
+<li>生成随机图片<a href="https://unsplash.com/developers">Unsplash Source</a></li>
+<li>在线 logo 随机生成工具<a href="http://emblemmatic.org/markmaker/#/">MarkMaker</a></li>
+</ul>
+</li>
+<li>阿里巴巴矢量图标库:<a href="http://www.iconfont.cn/plus">iconfont</a></li>
+<li>壁纸: <a href="https://www.desktoppr.co/wallpapers">desktoppr</a></li>
+<li>Material icons图标:<a href="https://material.io/tools/icons/?style=baseline">Material icons</a></li>
+<li>批量编辑图片的所有工具。包括压缩图片，剪裁图片，图片加水印，转化至jpg图片等等:<a href="https://www.iloveimg.com/zh-cn">Iloveimg</a></li>
+<li>任意GIF添加字幕<a href="https://www.pkgif.net/">pkgif</a></li>
+<li>一键下载当前网页的所有图片<a href="https://appscyborg.com/image-cyborg/">ImageCyborg</a></li>
+<li>免费正版图片资源<ul>
+<li><a href="https://unsplash.com/">https://unsplash.com/</a></li>
+<li><a href="https://pixabay.com/zh/">https://pixabay.com/zh/</a></li>
+<li><a href="http://www.piqsels.com/zh">http://www.piqsels.com/zh</a></li>
+</ul>
+</li>
+<li>一键背景消除：<a href="https://www.remove.bg/zh">https://www.remove.bg/zh</a></li>
+<li>证件照换底色：<a href="https://www.bgconverter.com/">https://www.bgconverter.com/</a></li>
+<li>将照片变成艺术照：<a href="https://deepart.io/">https://deepart.io/</a></li>
+<li>图片压缩：<ul>
+<li><a href="https://tinypng.com/">https://tinypng.com/</a></li>
+<li><a href="http://zhitu.isux.us/">智图</a></li>
+<li><a href="https://tinypng.com/">Tinypng</a></li>
+<li>SVG图形压缩优化:<a href="https://jakearchibald.github.io/svgomg/">SVGOMG</a></li>
+</ul>
+</li>
+<li>电影截图：<a href="https://film-grab.com/">https://film-grab.com/</a></li>
+<li>样机图片大全：<a href="https://mockupplanet.com/">https://mockupplanet.com/</a></li>
+</ul>
+<h2 id="视频"><a href="#视频" class="headerlink" title="视频"></a>视频</h2><ul>
+<li>快手、抖音、秒拍视频解析：<a href="https://www.parsevideo.com/">https://www.parsevideo.com/</a></li>
+</ul>
+<h2 id="书籍"><a href="#书籍" class="headerlink" title="书籍"></a>书籍</h2><ul>
+<li>鸠摩搜书：<a href="https://www.jiumodiary.com/">https://www.jiumodiary.com/</a></li>
+<li>免费古籍图书：<a href="https://new.shuge.org/">https://new.shuge.org/</a></li>
+</ul>
+<h2 id="纪录片"><a href="#纪录片" class="headerlink" title="纪录片"></a>纪录片</h2><ul>
+<li>纪录片天地：<a href="http://www.jlpcn.net/">http://www.jlpcn.net/</a></li>
+<li>纪录片之家：<a href="http://www.jlpdq.com/">http://www.jlpdq.com/</a></li>
+</ul>
+<h2 id="网络-amp-安全"><a href="#网络-amp-安全" class="headerlink" title="网络&amp;安全"></a>网络&amp;安全</h2><ul>
+<li>查看IP伪装信息：<a href="https://whoer.net/zh">https://whoer.net/zh</a></li>
+<li>查看密码泄漏：<a href="https://haveibeenpwned.com/">https://haveibeenpwned.com/</a></li>
+<li>网站公用账号：<a href="http://bugmenot.com/">http://bugmenot.com/</a></li>
+<li>检查网站状态：<a href="https://zijian.aliyun.com/">https://zijian.aliyun.com/</a></li>
+<li>免费uptime监控：<a href="https://uptimerobot.com/">https://uptimerobot.com/</a></li>
+<li>whois查询：<a href="https://whois.aliyun.com/">https://whois.aliyun.com</a></li>
+<li>IP ping、路由查询：<a href="https://tools.ipip.net/newping.php">https://tools.ipip.net/newping.php</a></li>
+<li>网页速度测试：<a href="https://developers.google.com/speed/pagespeed/insights/">https://developers.google.com/speed/pagespeed/insights/</a></li>
+<li>域名低价查询：<a href="https://tld-list.com/">https://tld-list.com</a></li>
+<li>DNS<ul>
+<li>ip域名查询：<a href="https://site.ip138.com/">https://site.ip138.com</a></li>
+<li><a href="https://securitytrails.com/">https://securitytrails.com/</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="AI"><a href="#AI" class="headerlink" title="AI"></a>AI</h2><ul>
+<li>AI论文生成工具：<a href="https://essay.1ts.fun/">https://essay.1ts.fun</a></li>
+<li>AI写作机器人：<a href="https://www.giiso.com/#/">https://www.giiso.com/#/</a></li>
+<li>AI自动上色：<a href="https://petalica-paint.pixiv.dev/index_zh.html">https://petalica-paint.pixiv.dev/index_zh.html</a></li>
+<li>AI写对联：<a href="http://duilian.msra.cn/app/couplet.aspx">http://duilian.msra.cn/app/couplet.aspx</a></li>
+<li>AI生成照片：<a href="http://www.seeprettyface.com/index.html">http://www.seeprettyface.com/index.html</a></li>
+<li>AI做PPT：<a href="https://www.beautiful.ai/">https://www.beautiful.ai/</a></li>
+</ul>
+<h2 id="编程"><a href="#编程" class="headerlink" title="编程"></a>编程</h2><ul>
+<li>以动画的形式让你学习 git: <a href="https://learngitbranching.js.org/?locale=zh_CN">Learn Git Branching</a></li>
+<li>代码格式美化：<a href="https://carbon.now.sh/">https://carbon.now.sh/</a></li>
+<li>编程语言性能对比：<a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/">https://benchmarksgame-team.pages.debian.net/benchmarksgame/</a></li>
+<li>代码分享: [Ubuntu pastebin] (<a href="https://paste.ubuntu.com/">https://paste.ubuntu.com/</a>)</li>
+<li>在线代码编辑:<ul>
+<li><a href="https://codepen.io/">Codepen</a></li>
+<li><a href="http://jsbin.com/">Jsbin</a></li>
+<li>在线写React,自动编译,有代码提示: <a href="https://codesandbox.io/">CodeSandbox</a></li>
+</ul>
+</li>
+<li>正则可视化: <a href="https://regexper.com/">Regexper</a></li>
+<li>正则表达式测试: <a href="https://regex101.com/">Regex101</a></li>
+<li>数据结构，算法可视化: <a href="https://visualgo.net/">Visualgo</a></li>
+<li>测试网站速度，优化性能: <a href="https://pagespeed.web.dev/">PageSpeed Insights</a></li>
+<li>生成类似代码注释里那种佛祖的代码: <a href="http://asciiflow.com/">Asciiflow</a></li>
+<li>生成 nginx 配置: <a href="https://www.digitalocean.com/community/tools/nginx?global.app.lang=zhCN">NGINXConfig</a></li>
+<li>开发变量命名神器: <a href="https://unbug.github.io/codelf/">codeif</a></li>
+<li>常用速查表，快速查询各类框架和库的常用方法，很实用：<a href="https://devhints.io/">devhints</a></li>
+<li>快速查询各类框架和周边库的中文文档: <a href="https://docschina.org/">印记中文</a></li>
+<li>搜索网站是否有不安全的头部 header 设置，并会评分: <a href="https://securityheaders.com/">Security Headers</a></li>
+<li>各种编程语言 API 文档<a href="https://devdocs.io/">devdocs</a></li>
+</ul>
+<h2 id="在线软件"><a href="#在线软件" class="headerlink" title="在线软件"></a>在线软件</h2><ul>
+<li>简历<ul>
+<li>简历模板: <a href="https://www.hloom.com/resume-examples/">resume-examples</a></li>
+<li>生成简历: <a href="https://enhancv.com/">Enhancv</a></li>
+</ul>
+</li>
+<li>在线绘画：<a href="https://www.autodraw.com/">https://www.autodraw.com/</a></li>
+<li>在线流程图：<a href="https://app.diagrams.net/">https://app.diagrams.net/</a></li>
+<li>在线画流程图，思维导图、UI原型图等等<ul>
+<li><a href="https://www.processon.com/">ProcessOn</a></li>
+<li><a href="https://www.draw.io/">draw.io</a></li>
+</ul>
+</li>
+<li>在线PS：<a href="https://www.photopea.com/">https://www.photopea.com/</a></li>
+<li>在线文件转换，支持 200 多种文件格式转换<a href="https://www.alltoall.net/">alltoall</a></li>
+<li>能够在线使用ps，ai，office，xmind，火狐浏览器等多个应用的网站<a href="https://uzer.me/">uzer</a></li>
+<li>在线图表制作工具<a href="https://infogram.com/">infogram</a></li>
+<li>极简大纲笔记，一键生成思维导图:<a href="http://mubu.com/home">幕布</a></li>
+<li>在线制作 PPT:<ul>
+<li><a href="https://ppt.baomitu.com/">声享</a></li>
+<li>人工智能 ppt 模板创建:<a href="https://about.beautiful.ai/">Beautiful.Ai</a></li>
+<li>ppt 模板<a href="http://www.koppt.cn/index">KOPPT</a></li>
+</ul>
+</li>
+<li>在线生成二维码:<a href="https://cli.im/">草料二维码</a></li>
+<li>PDF压缩，PDF转PPT，Word，Excel等等都可以直接通过这个页面实现:<a href="https://smallpdf.com/">Smallpdf</a></li>
+</ul>
+<h2 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h2><ul>
+<li>配色：<ul>
+<li><a href="https://colorhunt.co/">https://colorhunt.co/</a></li>
+<li><a href="https://color.adobe.com/zh/create/color-wheel">https://color.adobe.com/zh/create/color-wheel</a></li>
+<li><a href="https://www.webdesignrankings.com/resources/lolcolors/">https://www.webdesignrankings.com/resources/lolcolors/</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="合集类工具网站"><a href="#合集类工具网站" class="headerlink" title="合集类工具网站"></a>合集类工具网站</h2><ul>
+<li><a href="https://shadiao.pro/">https://shadiao.pro/</a></li>
+</ul>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ul>
+<li>免费微信消息推送(Server酱)：<a href="http://sc.ftqq.com/">http://sc.ftqq.com/</a></li>
+<li>中国老海报（国内被墙）：<a href="https://chineseposters.net/">https://chineseposters.net/</a></li>
+<li>查看软件替代品：<a href="https://alternativeto.net/">https://alternativeto.net/</a></li>
+<li>渣男说话艺术：<a href="https://lovelive.tools/">https://lovelive.tools/</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>工具箱</category>
+        <category>工具网站</category>
+      </categories>
+      <tags>
+        <tag>工具网站</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Android源码查看</title>
+    <url>/2022/10/21/view_android_source_code/</url>
+    <content><![CDATA[<p>查看Android源码的方式分为在线网页查看和下载到本地查看，本文对这些方式做记录，依据使用场景来遍历分析查看Android源码内容</p>
+<h2 id="Windows下载查看Android源码"><a href="#Windows下载查看Android源码" class="headerlink" title="Windows下载查看Android源码"></a>Windows下载查看Android源码</h2><h3 id="安装工具软件"><a href="#安装工具软件" class="headerlink" title="安装工具软件"></a>安装工具软件</h3><p>其他环境下下载源码使用repo这个工具，Windows里面搞repo有点麻烦，这里直接才有git clone的方式拷贝源码的每个子工程项目。在Windows端下载Android源码需要确认安装以下软件，列出我本地实践的一些软件以及版本,这两个工具软件安装不做记录</p>
+<blockquote>
+<p><a href="https://git-scm.com/download/win">Git</a>: 2.9.0</p>
+<p><a href="https://www.python.org/downloads/">Python</a>：3.9</p>
+<p>我下载的android_10_0_0_r47版本，占用磁盘硬盘293G，建议搞一个空盘有300G的空间</p>
+</blockquote>
+<h3 id="配置下载源码"><a href="#配置下载源码" class="headerlink" title="配置下载源码"></a>配置下载源码</h3><ul>
+<li><p>本地新建文件夹结构<br>我在此处建的文件夹结构如下：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">F:\Android\AOSP\clone_tsinghua</span><br></pre></td></tr></table></figure></div>
+</br></li>
+<li><p>克隆清华大学开源软件镜像（不用google的避免要翻墙）</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://aosp.tuna.tsinghua.edu.cn/platform/manifest.git</span><br></pre></td></tr></table></figure></div>
+</br></li>
+<li><p>选择一个下载版本</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> manifest</span><br><span class="line">// 切换到android-10.0.0_r47分支</span><br><span class="line">git checkout -b android-10.0.0_r47 origin/android-10.0.0_r47</span><br></pre></td></tr></table></figure></div>
+</br>
+可以在manifest目录执行``git branch -a``查看所有的分支情况选择一个需要的版本源码，同意可以在[官网](https://source.android.google.cn/docs/setup/about/build-numbers#source-code-tags-and-builds)找到对应的标记版本
+</li>
+<li><p>编写python下载脚本<br>文件结构新建python文件：F:\Android\AOSP\clone_tsinghua\downloadAOSP.py, 提供一个可下载：<a href="downloadAOSP.py">downloadAOSP.py</a></p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">import xml.dom.minidom</span><br><span class="line">import os</span><br><span class="line">from subprocess import call</span><br><span class="line">// 注意地址中使用的是 <span class="string">&quot;/&quot;</span> 而不是<span class="string">&quot;\&quot;, unbantu 跟Windows 是有区别的</span></span><br><span class="line"><span class="string">// 代码保存位置，硬盘建议大于100G</span></span><br><span class="line"><span class="string">rootdir = &quot;</span>F:/Android/AOSP/android_10_0_0_r47<span class="string">&quot;</span></span><br><span class="line"><span class="string">// git 安装路径，可以使用 where git 命令查看</span></span><br><span class="line"><span class="string">git = &quot;</span>D:/Program Files/Git/bin/git.exe<span class="string">&quot;</span></span><br><span class="line"><span class="string">// 刚刚切换 android-10.0.0_r47 目录下的defaul.xml 文件</span></span><br><span class="line"><span class="string">dom = xml.dom.minidom.parse(&quot;</span>F:/Android/AOSP/clone_tsinghua/manifest/default.xml<span class="string">&quot;)</span></span><br><span class="line"><span class="string">root = dom.documentElement</span></span><br><span class="line"><span class="string">// clone 清华大学镜像库地址</span></span><br><span class="line"><span class="string">prefix = git + &quot;</span> <span class="built_in">clone</span> https://mirrors.tuna.tsinghua.edu.cn/git/AOSP/<span class="string">&quot;</span></span><br><span class="line"><span class="string">suffix = &quot;</span>.git<span class="string">&quot;</span></span><br><span class="line"><span class="string">if not os.path.exists(rootdir):</span></span><br><span class="line"><span class="string">    os.mkdir(rootdir)</span></span><br><span class="line"><span class="string"> </span></span><br><span class="line"><span class="string">for node in root.getElementsByTagName(&quot;</span>project<span class="string">&quot;):</span></span><br><span class="line"><span class="string">    os.chdir(rootdir)</span></span><br><span class="line"><span class="string">    d = node.getAttribute(&quot;</span>path<span class="string">&quot;)</span></span><br><span class="line"><span class="string">    last = d.rfind(&quot;</span>/<span class="string">&quot;)</span></span><br><span class="line"><span class="string">    if last != -1:</span></span><br><span class="line"><span class="string">        d = rootdir + &quot;</span>/<span class="string">&quot; + d[:last]</span></span><br><span class="line"><span class="string">        if not os.path.exists(d):</span></span><br><span class="line"><span class="string">            os.makedirs(d)</span></span><br><span class="line"><span class="string">        os.chdir(d)</span></span><br><span class="line"><span class="string">    cmd = prefix + node.getAttribute(&quot;</span>name<span class="string">&quot;) + suffix</span></span><br><span class="line"><span class="string">    call(cmd)</span></span><br></pre></td></tr></table></figure></div>
+</br>
+</li>
+<li><p>执行下载脚本开始下载<br>双击downloadAOSP.py或者在终端执行<code>python downloadAOSP.py</code>即可开始下载对应的Android源码了。注意脚本里面的路径要换成你的电脑环境的路径</p>
+</li>
+</ul>
+<p>下载完成后建议配合sourceinsight查看源码，可以链接代码。下载下来后占用磁盘将近300G，太大了，还有使用在线网页的方式可以更加轻量的查看源码</p>
+<h2 id="网页查看Android源码"><a href="#网页查看Android源码" class="headerlink" title="网页查看Android源码"></a>网页查看Android源码</h2><p>如果不想占用过多的磁盘，并且在线查看源码，推荐几个好用的在线网站。</p>
+<h3 id="Google官方源码地址"><a href="#Google官方源码地址" class="headerlink" title="Google官方源码地址"></a>Google官方源码地址</h3><p>如果方便翻墙，可以使用Google官方的源码查看网站：<a href="cs.android.com">cs.android.com</a>,版本信息很全，而且带有修改记录，源码阅读神奇</p>
+<h3 id="Android-Ref"><a href="#Android-Ref" class="headerlink" title="Android Ref"></a>Android Ref</h3><p><a href="androidxref.com">Android Ref</a> 国外网站，但是无需翻墙访问，但是只支持到Android9的源码</p>
+<h3 id="Android-中文社区"><a href="#Android-中文社区" class="headerlink" title="Android 中文社区"></a>Android 中文社区</h3><p><a href="www.androidos.net.cn/sourcecode">Android 中文社区</a>是国内网站，支持到Android10</p>
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>源码</category>
+      </categories>
+      <tags>
+        <tag>Android源码</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Dalvik 格式与字节码规范</title>
     <url>/2022/10/18/dalvik-format-and-bytecode/</url>
     <content><![CDATA[<p>Android 4.4之后Google使用ART（Android Runtime）虚拟机，将由JIT执行的Dalvik切换为AOT编译的ART。ART可以完整的对Dalvik可执行格式以及字节码规范支持，本节我们先了解Dalvik虚拟机的特性以及Dalvik字节码的汇编语言，为后面了解ART虚拟机打基础。</p>
@@ -2172,196 +2362,6 @@ Ljava/lang/String; ：字段类型
       </categories>
       <tags>
         <tag>Android逆向</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>工具网站合集</title>
-    <url>/2022/10/16/tool-website-collection/</url>
-    <content><![CDATA[<h2 id="图片"><a href="#图片" class="headerlink" title="图片"></a>图片</h2><ul>
-<li>生成图片<ul>
-<li>生成好看的渐变背景图: <a href="https://coolbackgrounds.io/">Cool Backgrounds</a></li>
-<li>生成类似 mac 风格的代码图片: <a href="https://carbon.now.sh/">carbon </a></li>
-<li>生成随机图片<a href="https://unsplash.com/developers">Unsplash Source</a></li>
-<li>在线 logo 随机生成工具<a href="http://emblemmatic.org/markmaker/#/">MarkMaker</a></li>
-</ul>
-</li>
-<li>阿里巴巴矢量图标库:<a href="http://www.iconfont.cn/plus">iconfont</a></li>
-<li>壁纸: <a href="https://www.desktoppr.co/wallpapers">desktoppr</a></li>
-<li>Material icons图标:<a href="https://material.io/tools/icons/?style=baseline">Material icons</a></li>
-<li>批量编辑图片的所有工具。包括压缩图片，剪裁图片，图片加水印，转化至jpg图片等等:<a href="https://www.iloveimg.com/zh-cn">Iloveimg</a></li>
-<li>任意GIF添加字幕<a href="https://www.pkgif.net/">pkgif</a></li>
-<li>一键下载当前网页的所有图片<a href="https://appscyborg.com/image-cyborg/">ImageCyborg</a></li>
-<li>免费正版图片资源<ul>
-<li><a href="https://unsplash.com/">https://unsplash.com/</a></li>
-<li><a href="https://pixabay.com/zh/">https://pixabay.com/zh/</a></li>
-<li><a href="http://www.piqsels.com/zh">http://www.piqsels.com/zh</a></li>
-</ul>
-</li>
-<li>一键背景消除：<a href="https://www.remove.bg/zh">https://www.remove.bg/zh</a></li>
-<li>证件照换底色：<a href="https://www.bgconverter.com/">https://www.bgconverter.com/</a></li>
-<li>将照片变成艺术照：<a href="https://deepart.io/">https://deepart.io/</a></li>
-<li>图片压缩：<ul>
-<li><a href="https://tinypng.com/">https://tinypng.com/</a></li>
-<li><a href="http://zhitu.isux.us/">智图</a></li>
-<li><a href="https://tinypng.com/">Tinypng</a></li>
-<li>SVG图形压缩优化:<a href="https://jakearchibald.github.io/svgomg/">SVGOMG</a></li>
-</ul>
-</li>
-<li>电影截图：<a href="https://film-grab.com/">https://film-grab.com/</a></li>
-<li>样机图片大全：<a href="https://mockupplanet.com/">https://mockupplanet.com/</a></li>
-</ul>
-<h2 id="视频"><a href="#视频" class="headerlink" title="视频"></a>视频</h2><ul>
-<li>快手、抖音、秒拍视频解析：<a href="https://www.parsevideo.com/">https://www.parsevideo.com/</a></li>
-</ul>
-<h2 id="书籍"><a href="#书籍" class="headerlink" title="书籍"></a>书籍</h2><ul>
-<li>鸠摩搜书：<a href="https://www.jiumodiary.com/">https://www.jiumodiary.com/</a></li>
-<li>免费古籍图书：<a href="https://new.shuge.org/">https://new.shuge.org/</a></li>
-</ul>
-<h2 id="纪录片"><a href="#纪录片" class="headerlink" title="纪录片"></a>纪录片</h2><ul>
-<li>纪录片天地：<a href="http://www.jlpcn.net/">http://www.jlpcn.net/</a></li>
-<li>纪录片之家：<a href="http://www.jlpdq.com/">http://www.jlpdq.com/</a></li>
-</ul>
-<h2 id="网络-amp-安全"><a href="#网络-amp-安全" class="headerlink" title="网络&amp;安全"></a>网络&amp;安全</h2><ul>
-<li>查看IP伪装信息：<a href="https://whoer.net/zh">https://whoer.net/zh</a></li>
-<li>查看密码泄漏：<a href="https://haveibeenpwned.com/">https://haveibeenpwned.com/</a></li>
-<li>网站公用账号：<a href="http://bugmenot.com/">http://bugmenot.com/</a></li>
-<li>检查网站状态：<a href="https://zijian.aliyun.com/">https://zijian.aliyun.com/</a></li>
-<li>免费uptime监控：<a href="https://uptimerobot.com/">https://uptimerobot.com/</a></li>
-<li>whois查询：<a href="https://whois.aliyun.com/">https://whois.aliyun.com</a></li>
-<li>IP ping、路由查询：<a href="https://tools.ipip.net/newping.php">https://tools.ipip.net/newping.php</a></li>
-<li>网页速度测试：<a href="https://developers.google.com/speed/pagespeed/insights/">https://developers.google.com/speed/pagespeed/insights/</a></li>
-<li>域名低价查询：<a href="https://tld-list.com/">https://tld-list.com</a></li>
-<li>DNS<ul>
-<li>ip域名查询：<a href="https://site.ip138.com/">https://site.ip138.com</a></li>
-<li><a href="https://securitytrails.com/">https://securitytrails.com/</a></li>
-</ul>
-</li>
-</ul>
-<h2 id="AI"><a href="#AI" class="headerlink" title="AI"></a>AI</h2><ul>
-<li>AI论文生成工具：<a href="https://essay.1ts.fun/">https://essay.1ts.fun</a></li>
-<li>AI写作机器人：<a href="https://www.giiso.com/#/">https://www.giiso.com/#/</a></li>
-<li>AI自动上色：<a href="https://petalica-paint.pixiv.dev/index_zh.html">https://petalica-paint.pixiv.dev/index_zh.html</a></li>
-<li>AI写对联：<a href="http://duilian.msra.cn/app/couplet.aspx">http://duilian.msra.cn/app/couplet.aspx</a></li>
-<li>AI生成照片：<a href="http://www.seeprettyface.com/index.html">http://www.seeprettyface.com/index.html</a></li>
-<li>AI做PPT：<a href="https://www.beautiful.ai/">https://www.beautiful.ai/</a></li>
-</ul>
-<h2 id="编程"><a href="#编程" class="headerlink" title="编程"></a>编程</h2><ul>
-<li>以动画的形式让你学习 git: <a href="https://learngitbranching.js.org/?locale=zh_CN">Learn Git Branching</a></li>
-<li>代码格式美化：<a href="https://carbon.now.sh/">https://carbon.now.sh/</a></li>
-<li>编程语言性能对比：<a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/">https://benchmarksgame-team.pages.debian.net/benchmarksgame/</a></li>
-<li>代码分享: [Ubuntu pastebin] (<a href="https://paste.ubuntu.com/">https://paste.ubuntu.com/</a>)</li>
-<li>在线代码编辑:<ul>
-<li><a href="https://codepen.io/">Codepen</a></li>
-<li><a href="http://jsbin.com/">Jsbin</a></li>
-<li>在线写React,自动编译,有代码提示: <a href="https://codesandbox.io/">CodeSandbox</a></li>
-</ul>
-</li>
-<li>正则可视化: <a href="https://regexper.com/">Regexper</a></li>
-<li>正则表达式测试: <a href="https://regex101.com/">Regex101</a></li>
-<li>数据结构，算法可视化: <a href="https://visualgo.net/">Visualgo</a></li>
-<li>测试网站速度，优化性能: <a href="https://pagespeed.web.dev/">PageSpeed Insights</a></li>
-<li>生成类似代码注释里那种佛祖的代码: <a href="http://asciiflow.com/">Asciiflow</a></li>
-<li>生成 nginx 配置: <a href="https://www.digitalocean.com/community/tools/nginx?global.app.lang=zhCN">NGINXConfig</a></li>
-<li>开发变量命名神器: <a href="https://unbug.github.io/codelf/">codeif</a></li>
-<li>常用速查表，快速查询各类框架和库的常用方法，很实用：<a href="https://devhints.io/">devhints</a></li>
-<li>快速查询各类框架和周边库的中文文档: <a href="https://docschina.org/">印记中文</a></li>
-<li>搜索网站是否有不安全的头部 header 设置，并会评分: <a href="https://securityheaders.com/">Security Headers</a></li>
-<li>各种编程语言 API 文档<a href="https://devdocs.io/">devdocs</a></li>
-</ul>
-<h2 id="在线软件"><a href="#在线软件" class="headerlink" title="在线软件"></a>在线软件</h2><ul>
-<li>简历<ul>
-<li>简历模板: <a href="https://www.hloom.com/resume-examples/">resume-examples</a></li>
-<li>生成简历: <a href="https://enhancv.com/">Enhancv</a></li>
-</ul>
-</li>
-<li>在线绘画：<a href="https://www.autodraw.com/">https://www.autodraw.com/</a></li>
-<li>在线流程图：<a href="https://app.diagrams.net/">https://app.diagrams.net/</a></li>
-<li>在线画流程图，思维导图、UI原型图等等<ul>
-<li><a href="https://www.processon.com/">ProcessOn</a></li>
-<li><a href="https://www.draw.io/">draw.io</a></li>
-</ul>
-</li>
-<li>在线PS：<a href="https://www.photopea.com/">https://www.photopea.com/</a></li>
-<li>在线文件转换，支持 200 多种文件格式转换<a href="https://www.alltoall.net/">alltoall</a></li>
-<li>能够在线使用ps，ai，office，xmind，火狐浏览器等多个应用的网站<a href="https://uzer.me/">uzer</a></li>
-<li>在线图表制作工具<a href="https://infogram.com/">infogram</a></li>
-<li>极简大纲笔记，一键生成思维导图:<a href="http://mubu.com/home">幕布</a></li>
-<li>在线制作 PPT:<ul>
-<li><a href="https://ppt.baomitu.com/">声享</a></li>
-<li>人工智能 ppt 模板创建:<a href="https://about.beautiful.ai/">Beautiful.Ai</a></li>
-<li>ppt 模板<a href="http://www.koppt.cn/index">KOPPT</a></li>
-</ul>
-</li>
-<li>在线生成二维码:<a href="https://cli.im/">草料二维码</a></li>
-<li>PDF压缩，PDF转PPT，Word，Excel等等都可以直接通过这个页面实现:<a href="https://smallpdf.com/">Smallpdf</a></li>
-</ul>
-<h2 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h2><ul>
-<li>配色：<ul>
-<li><a href="https://colorhunt.co/">https://colorhunt.co/</a></li>
-<li><a href="https://color.adobe.com/zh/create/color-wheel">https://color.adobe.com/zh/create/color-wheel</a></li>
-<li><a href="https://www.webdesignrankings.com/resources/lolcolors/">https://www.webdesignrankings.com/resources/lolcolors/</a></li>
-</ul>
-</li>
-</ul>
-<h2 id="合集类工具网站"><a href="#合集类工具网站" class="headerlink" title="合集类工具网站"></a>合集类工具网站</h2><ul>
-<li><a href="https://shadiao.pro/">https://shadiao.pro/</a></li>
-</ul>
-<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ul>
-<li>免费微信消息推送(Server酱)：<a href="http://sc.ftqq.com/">http://sc.ftqq.com/</a></li>
-<li>中国老海报（国内被墙）：<a href="https://chineseposters.net/">https://chineseposters.net/</a></li>
-<li>查看软件替代品：<a href="https://alternativeto.net/">https://alternativeto.net/</a></li>
-<li>渣男说话艺术：<a href="https://lovelive.tools/">https://lovelive.tools/</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>工具箱</category>
-        <category>工具网站</category>
-      </categories>
-      <tags>
-        <tag>工具网站</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Android源码查看</title>
-    <url>/2022/10/21/view_android_source_code/</url>
-    <content><![CDATA[<p>查看Android源码的方式分为在线网页查看和下载到本地查看，本文对这些方式做记录，依据使用场景来遍历分析查看Android源码内容</p>
-<h2 id="Windows下载查看Android源码"><a href="#Windows下载查看Android源码" class="headerlink" title="Windows下载查看Android源码"></a>Windows下载查看Android源码</h2><h3 id="安装工具软件"><a href="#安装工具软件" class="headerlink" title="安装工具软件"></a>安装工具软件</h3><p>其他环境下下载源码使用repo这个工具，Windows里面搞repo有点麻烦，这里直接才有git clone的方式拷贝源码的每个子工程项目。在Windows端下载Android源码需要确认安装以下软件，列出我本地实践的一些软件以及版本,这两个工具软件安装不做记录</p>
-<blockquote>
-<p><a href="https://git-scm.com/download/win">Git</a>: 2.9.0</p>
-<p><a href="https://www.python.org/downloads/">Python</a>：3.9</p>
-<p>我下载的android_10_0_0_r47版本，占用磁盘硬盘293G，建议搞一个空盘有300G的空间</p>
-</blockquote>
-<h3 id="配置下载源码"><a href="#配置下载源码" class="headerlink" title="配置下载源码"></a>配置下载源码</h3><ul>
-<li><p>本地新建文件夹结构<br>我在此处建的文件夹结构如下：</p>
-<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">F:\Android\AOSP\clone_tsinghua</span><br></pre></td></tr></table></figure></div>
-</br></li>
-<li><p>克隆清华大学开源软件镜像（不用google的避免要翻墙）</p>
-<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://aosp.tuna.tsinghua.edu.cn/platform/manifest.git</span><br></pre></td></tr></table></figure></div>
-</br></li>
-<li><p>选择一个下载版本</p>
-<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> manifest</span><br><span class="line">// 切换到android-10.0.0_r47分支</span><br><span class="line">git checkout -b android-10.0.0_r47 origin/android-10.0.0_r47</span><br></pre></td></tr></table></figure></div>
-</br>
-可以在manifest目录执行``git branch -a``查看所有的分支情况选择一个需要的版本源码，同意可以在[官网](https://source.android.google.cn/docs/setup/about/build-numbers#source-code-tags-and-builds)找到对应的标记版本
-</li>
-<li><p>编写python下载脚本<br>文件结构新建python文件：F:\Android\AOSP\clone_tsinghua\downloadAOSP.py, 提供一个可下载：<a href="downloadAOSP.py">downloadAOSP.py</a></p>
-<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="code"><pre><span class="line">import xml.dom.minidom</span><br><span class="line">import os</span><br><span class="line">from subprocess import call</span><br><span class="line">// 注意地址中使用的是 <span class="string">&quot;/&quot;</span> 而不是<span class="string">&quot;\&quot;, unbantu 跟Windows 是有区别的</span></span><br><span class="line"><span class="string">// 代码保存位置，硬盘建议大于100G</span></span><br><span class="line"><span class="string">rootdir = &quot;</span>F:/Android/AOSP/android_10_0_0_r47<span class="string">&quot;</span></span><br><span class="line"><span class="string">// git 安装路径，可以使用 where git 命令查看</span></span><br><span class="line"><span class="string">git = &quot;</span>D:/Program Files/Git/bin/git.exe<span class="string">&quot;</span></span><br><span class="line"><span class="string">// 刚刚切换 android-10.0.0_r47 目录下的defaul.xml 文件</span></span><br><span class="line"><span class="string">dom = xml.dom.minidom.parse(&quot;</span>F:/Android/AOSP/clone_tsinghua/manifest/default.xml<span class="string">&quot;)</span></span><br><span class="line"><span class="string">root = dom.documentElement</span></span><br><span class="line"><span class="string">// clone 清华大学镜像库地址</span></span><br><span class="line"><span class="string">prefix = git + &quot;</span> <span class="built_in">clone</span> https://mirrors.tuna.tsinghua.edu.cn/git/AOSP/<span class="string">&quot;</span></span><br><span class="line"><span class="string">suffix = &quot;</span>.git<span class="string">&quot;</span></span><br><span class="line"><span class="string">if not os.path.exists(rootdir):</span></span><br><span class="line"><span class="string">    os.mkdir(rootdir)</span></span><br><span class="line"><span class="string"> </span></span><br><span class="line"><span class="string">for node in root.getElementsByTagName(&quot;</span>project<span class="string">&quot;):</span></span><br><span class="line"><span class="string">    os.chdir(rootdir)</span></span><br><span class="line"><span class="string">    d = node.getAttribute(&quot;</span>path<span class="string">&quot;)</span></span><br><span class="line"><span class="string">    last = d.rfind(&quot;</span>/<span class="string">&quot;)</span></span><br><span class="line"><span class="string">    if last != -1:</span></span><br><span class="line"><span class="string">        d = rootdir + &quot;</span>/<span class="string">&quot; + d[:last]</span></span><br><span class="line"><span class="string">        if not os.path.exists(d):</span></span><br><span class="line"><span class="string">            os.makedirs(d)</span></span><br><span class="line"><span class="string">        os.chdir(d)</span></span><br><span class="line"><span class="string">    cmd = prefix + node.getAttribute(&quot;</span>name<span class="string">&quot;) + suffix</span></span><br><span class="line"><span class="string">    call(cmd)</span></span><br></pre></td></tr></table></figure></div>
-</br>
-</li>
-<li><p>执行下载脚本开始下载<br>双击downloadAOSP.py或者在终端执行<code>python downloadAOSP.py</code>即可开始下载对应的Android源码了。注意脚本里面的路径要换成你的电脑环境的路径</p>
-</li>
-</ul>
-<p>下载完成后建议配合sourceinsight查看源码，可以链接代码。下载下来后占用磁盘将近300G，太大了，还有使用在线网页的方式可以更加轻量的查看源码</p>
-<h2 id="网页查看Android源码"><a href="#网页查看Android源码" class="headerlink" title="网页查看Android源码"></a>网页查看Android源码</h2><p>如果不想占用过多的磁盘，并且在线查看源码，推荐几个好用的在线网站。</p>
-<h3 id="Google官方源码地址"><a href="#Google官方源码地址" class="headerlink" title="Google官方源码地址"></a>Google官方源码地址</h3><p>如果方便翻墙，可以使用Google官方的源码查看网站：<a href="cs.android.com">cs.android.com</a>,版本信息很全，而且带有修改记录，源码阅读神奇</p>
-<h3 id="Android-Ref"><a href="#Android-Ref" class="headerlink" title="Android Ref"></a>Android Ref</h3><p><a href="androidxref.com">Android Ref</a> 国外网站，但是无需翻墙访问，但是只支持到Android9的源码</p>
-<h3 id="Android-中文社区"><a href="#Android-中文社区" class="headerlink" title="Android 中文社区"></a>Android 中文社区</h3><p><a href="www.androidos.net.cn/sourcecode">Android 中文社区</a>是国内网站，支持到Android10</p>
-]]></content>
-      <categories>
-        <category>Android</category>
-        <category>源码</category>
-      </categories>
-      <tags>
-        <tag>Android源码</tag>
       </tags>
   </entry>
   <entry>
