@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 6.3.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"lymanye.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.13.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"show_result":true,"style":"mac"},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":true,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="查看Android源码的方式分为在线网页查看和下载到本地查看，本文对这些方式做记录，依据使用场景来遍历分析查看Android源码内容 Windows下载查看Android源码安装工具软件其他环境下下载源码使用repo这个工具，Windows里面搞repo有点麻烦，这里直接才有git clone的方式拷贝源码的每个子工程项目。在Windows端下载Android源码需要确认安装以下软件，列出我本地实">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android源码查看">
+<meta property="og:url" content="https://lymanye.github.io/2022/10/21/view_android_source_code/index.html">
+<meta property="og:site_name" content="Lyman">
+<meta property="og:description" content="查看Android源码的方式分为在线网页查看和下载到本地查看，本文对这些方式做记录，依据使用场景来遍历分析查看Android源码内容 Windows下载查看Android源码安装工具软件其他环境下下载源码使用repo这个工具，Windows里面搞repo有点麻烦，这里直接才有git clone的方式拷贝源码的每个子工程项目。在Windows端下载Android源码需要确认安装以下软件，列出我本地实">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-10-21T05:59:21.000Z">
+<meta property="article:modified_time" content="2022-10-30T01:30:23.006Z">
+<meta property="article:author" content="Lyman">
+<meta property="article:tag" content="Android源码">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://lymanye.github.io/2022/10/21/view_android_source_code/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://lymanye.github.io/2022/10/21/view_android_source_code/","path":"2022/10/21/view_android_source_code/","title":"Android源码查看"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Android源码查看 | Lyman</title>
+  
+
+
+
+
+
+<link rel="dns-prefetch" href="http://104.156.225.196:8360">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Lyman</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">6</span></a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">9</span></a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">7</span></a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Windows%E4%B8%8B%E8%BD%BD%E6%9F%A5%E7%9C%8BAndroid%E6%BA%90%E7%A0%81"><span class="nav-number">1.</span> <span class="nav-text">Windows下载查看Android源码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E5%B7%A5%E5%85%B7%E8%BD%AF%E4%BB%B6"><span class="nav-number">1.1.</span> <span class="nav-text">安装工具软件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E4%B8%8B%E8%BD%BD%E6%BA%90%E7%A0%81"><span class="nav-number">1.2.</span> <span class="nav-text">配置下载源码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E9%A1%B5%E6%9F%A5%E7%9C%8BAndroid%E6%BA%90%E7%A0%81"><span class="nav-number">2.</span> <span class="nav-text">网页查看Android源码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Google%E5%AE%98%E6%96%B9%E6%BA%90%E7%A0%81%E5%9C%B0%E5%9D%80"><span class="nav-number">2.1.</span> <span class="nav-text">Google官方源码地址</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Android-Ref"><span class="nav-number">2.2.</span> <span class="nav-text">Android Ref</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Android-%E4%B8%AD%E6%96%87%E7%A4%BE%E5%8C%BA"><span class="nav-number">2.3.</span> <span class="nav-text">Android 中文社区</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Lyman"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Lyman</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/LymanYe" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;LymanYe" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:lymanye@gmail.com" title="E-Mail → mailto:lymanye@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://lymanye.github.io/2022/10/21/view_android_source_code/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Lyman">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Lyman">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Android源码查看 | Lyman">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Android源码查看
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-10-21 13:59:21" itemprop="dateCreated datePublished" datetime="2022-10-21T13:59:21+08:00">2022-10-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-10-30 09:30:23" itemprop="dateModified" datetime="2022-10-30T09:30:23+08:00">2022-10-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Android/%E6%BA%90%E7%A0%81/" itemprop="url" rel="index"><span itemprop="name">源码</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2022/10/21/view_android_source_code/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2022/10/21/view_android_source_code/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>查看Android源码的方式分为在线网页查看和下载到本地查看，本文对这些方式做记录，依据使用场景来遍历分析查看Android源码内容</p>
+<h2 id="Windows下载查看Android源码"><a href="#Windows下载查看Android源码" class="headerlink" title="Windows下载查看Android源码"></a>Windows下载查看Android源码</h2><h3 id="安装工具软件"><a href="#安装工具软件" class="headerlink" title="安装工具软件"></a>安装工具软件</h3><p>其他环境下下载源码使用repo这个工具，Windows里面搞repo有点麻烦，这里直接才有git clone的方式拷贝源码的每个子工程项目。在Windows端下载Android源码需要确认安装以下软件，列出我本地实践的一些软件以及版本,这两个工具软件安装不做记录</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://git-scm.com/download/win">Git</a>: 2.9.0</p>
+<p><a target="_blank" rel="noopener" href="https://www.python.org/downloads/">Python</a>：3.9</p>
+<p>我下载的android_10_0_0_r47版本，占用磁盘硬盘293G，建议搞一个空盘有300G的空间</p>
+</blockquote>
+<h3 id="配置下载源码"><a href="#配置下载源码" class="headerlink" title="配置下载源码"></a>配置下载源码</h3><ul>
+<li><p>本地新建文件夹结构<br>我在此处建的文件夹结构如下：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">F:\Android\AOSP\clone_tsinghua</span><br></pre></td></tr></table></figure></div>
+</br></li>
+<li><p>克隆清华大学开源软件镜像（不用google的避免要翻墙）</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://aosp.tuna.tsinghua.edu.cn/platform/manifest.git</span><br></pre></td></tr></table></figure></div>
+</br></li>
+<li><p>选择一个下载版本</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> manifest</span><br><span class="line">// 切换到android-10.0.0_r47分支</span><br><span class="line">git checkout -b android-10.0.0_r47 origin/android-10.0.0_r47</span><br></pre></td></tr></table></figure></div>
+</br>
+可以在manifest目录执行``git branch -a``查看所有的分支情况选择一个需要的版本源码，同意可以在[官网](https://source.android.google.cn/docs/setup/about/build-numbers#source-code-tags-and-builds)找到对应的标记版本
+</li>
+<li><p>编写python下载脚本<br>文件结构新建python文件：F:\Android\AOSP\clone_tsinghua\downloadAOSP.py, 提供一个可下载：<a href="downloadAOSP.py">downloadAOSP.py</a></p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">import xml.dom.minidom</span><br><span class="line">import os</span><br><span class="line">from subprocess import call</span><br><span class="line">// 注意地址中使用的是 <span class="string">&quot;/&quot;</span> 而不是<span class="string">&quot;\&quot;, unbantu 跟Windows 是有区别的</span></span><br><span class="line"><span class="string">// 代码保存位置，硬盘建议大于100G</span></span><br><span class="line"><span class="string">rootdir = &quot;</span>F:/Android/AOSP/android_10_0_0_r47<span class="string">&quot;</span></span><br><span class="line"><span class="string">// git 安装路径，可以使用 where git 命令查看</span></span><br><span class="line"><span class="string">git = &quot;</span>D:/Program Files/Git/bin/git.exe<span class="string">&quot;</span></span><br><span class="line"><span class="string">// 刚刚切换 android-10.0.0_r47 目录下的defaul.xml 文件</span></span><br><span class="line"><span class="string">dom = xml.dom.minidom.parse(&quot;</span>F:/Android/AOSP/clone_tsinghua/manifest/default.xml<span class="string">&quot;)</span></span><br><span class="line"><span class="string">root = dom.documentElement</span></span><br><span class="line"><span class="string">// clone 清华大学镜像库地址</span></span><br><span class="line"><span class="string">prefix = git + &quot;</span> <span class="built_in">clone</span> https://mirrors.tuna.tsinghua.edu.cn/git/AOSP/<span class="string">&quot;</span></span><br><span class="line"><span class="string">suffix = &quot;</span>.git<span class="string">&quot;</span></span><br><span class="line"><span class="string">if not os.path.exists(rootdir):</span></span><br><span class="line"><span class="string">    os.mkdir(rootdir)</span></span><br><span class="line"><span class="string"> </span></span><br><span class="line"><span class="string">for node in root.getElementsByTagName(&quot;</span>project<span class="string">&quot;):</span></span><br><span class="line"><span class="string">    os.chdir(rootdir)</span></span><br><span class="line"><span class="string">    d = node.getAttribute(&quot;</span>path<span class="string">&quot;)</span></span><br><span class="line"><span class="string">    last = d.rfind(&quot;</span>/<span class="string">&quot;)</span></span><br><span class="line"><span class="string">    if last != -1:</span></span><br><span class="line"><span class="string">        d = rootdir + &quot;</span>/<span class="string">&quot; + d[:last]</span></span><br><span class="line"><span class="string">        if not os.path.exists(d):</span></span><br><span class="line"><span class="string">            os.makedirs(d)</span></span><br><span class="line"><span class="string">        os.chdir(d)</span></span><br><span class="line"><span class="string">    cmd = prefix + node.getAttribute(&quot;</span>name<span class="string">&quot;) + suffix</span></span><br><span class="line"><span class="string">    call(cmd)</span></span><br></pre></td></tr></table></figure></div>
+</br>
+</li>
+<li><p>执行下载脚本开始下载<br>双击downloadAOSP.py或者在终端执行<code>python downloadAOSP.py</code>即可开始下载对应的Android源码了。注意脚本里面的路径要换成你的电脑环境的路径</p>
+</li>
+</ul>
+<p>下载完成后建议配合sourceinsight查看源码，可以链接代码。下载下来后占用磁盘将近300G，太大了，还有使用在线网页的方式可以更加轻量的查看源码</p>
+<h2 id="网页查看Android源码"><a href="#网页查看Android源码" class="headerlink" title="网页查看Android源码"></a>网页查看Android源码</h2><p>如果不想占用过多的磁盘，并且在线查看源码，推荐几个好用的在线网站。</p>
+<h3 id="Google官方源码地址"><a href="#Google官方源码地址" class="headerlink" title="Google官方源码地址"></a>Google官方源码地址</h3><p>如果方便翻墙，可以使用Google官方的源码查看网站：<a href="cs.android.com">cs.android.com</a>,版本信息很全，而且带有修改记录，源码阅读神奇</p>
+<h3 id="Android-Ref"><a href="#Android-Ref" class="headerlink" title="Android Ref"></a>Android Ref</h3><p><a href="androidxref.com">Android Ref</a> 国外网站，但是无需翻墙访问，但是只支持到Android9的源码</p>
+<h3 id="Android-中文社区"><a href="#Android-中文社区" class="headerlink" title="Android 中文社区"></a>Android 中文社区</h3><p><a href="www.androidos.net.cn/sourcecode">Android 中文社区</a>是国内网站，支持到Android10</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>Lyman
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://lymanye.github.io/2022/10/21/view_android_source_code/" title="Android源码查看">https://lymanye.github.io/2022/10/21/view_android_source_code/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Android%E6%BA%90%E7%A0%81/" rel="tag"># Android源码</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/10/18/dalvik-format-and-bytecode/" rel="prev" title="Dalvik 格式与字节码规范">
+                  <i class="fa fa-chevron-left"></i> Dalvik 格式与字节码规范
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/10/25/android_file_format/" rel="next" title="Android文件格式">
+                  Android文件格式 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Lyman</span>
+  <span class="post-meta-divider">|</span>
+  <span id="busuanzi_container_site_pv">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    访问量：<span id="busuanzi_value_site_pv"></span> 次数
+  </span>
+
+  <span class="post-meta-divider">|</span>
+  <span id="busuanzi_container_site_uv">
+    访客数：<span id="busuanzi_value_site_uv"></span> 人次
+  </span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">51k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">47 分钟</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lozad.js/1.16.0/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pangu/4.0.7/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script><script src="/js/code-unfold.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"http://104.156.225.196:8360","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":true,"pageview":false,"placeholder":"请文明评论呀","avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"visitor":true,"comment_count":true,"requiredFields":[],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2022/10/21/view_android_source_code/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>

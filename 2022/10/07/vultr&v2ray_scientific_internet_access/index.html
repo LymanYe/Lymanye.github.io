@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 6.3.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"lymanye.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.13.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"show_result":true,"style":"mac"},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":true,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前言 本博客适合小白一步步操作在自己的vps上搭建科学上网配置，并且对vps 服务器的要求不是很高，自己科学上网使用即可的用户服用。  vps服务器的选择国内国外都有很多，我们要做的操作首选国外的服务器（你懂的）开始博主想要弄oracle和Google的永久免费服务器，但是发现这些要一些国外的信用卡注册，属实太麻烦，然后发现比较稳定的有搬瓦工的服务器，奈何贫穷限制了我的选择，博客今日时间点最便宜的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="vultr+v2ray科学上网[翻墙]配置2022">
+<meta property="og:url" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/index.html">
+<meta property="og:site_name" content="Lyman">
+<meta property="og:description" content="前言 本博客适合小白一步步操作在自己的vps上搭建科学上网配置，并且对vps 服务器的要求不是很高，自己科学上网使用即可的用户服用。  vps服务器的选择国内国外都有很多，我们要做的操作首选国外的服务器（你懂的）开始博主想要弄oracle和Google的永久免费服务器，但是发现这些要一些国外的信用卡注册，属实太麻烦，然后发现比较稳定的有搬瓦工的服务器，奈何贫穷限制了我的选择，博客今日时间点最便宜的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665113427866.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665113926827.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665123752800.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665124128081.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665124271960.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665124818267.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665124523603.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665125036525.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665125133271.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665125278290.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665126021328.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665128484391.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665128956268.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665129461949.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665129800018.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665131802400.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665132000188.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665131918313.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665134205990.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665134969825.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665135150951.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665135748869.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665139835835.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665139985337.jpg">
+<meta property="article:published_time" content="2022-10-07T07:06:51.000Z">
+<meta property="article:modified_time" content="2022-10-30T03:26:32.397Z">
+<meta property="article:author" content="Lyman">
+<meta property="article:tag" content="网络">
+<meta property="article:tag" content="翻墙">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/1665113427866.jpg">
+
+
+<link rel="canonical" href="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/","path":"2022/10/07/vultr&v2ray_scientific_internet_access/","title":"vultr+v2ray科学上网[翻墙]配置2022"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>vultr+v2ray科学上网[翻墙]配置2022 | Lyman</title>
+  
+
+
+
+
+
+<link rel="dns-prefetch" href="http://104.156.225.196:8360">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Lyman</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">6</span></a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">9</span></a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">7</span></a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">环境配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%AD%E4%B9%B0Vultr%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">3.</span> <span class="nav-text">购买Vultr服务器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%A8%E5%86%8CVultr"><span class="nav-number">3.1.</span> <span class="nav-text">注册Vultr</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%85%E5%80%BC10%E7%BE%8E%E5%85%83"><span class="nav-number">3.2.</span> <span class="nav-text">充值10美元</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2%E4%B8%80%E5%8F%B0%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">3.3.</span> <span class="nav-text">部署一台服务器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%89%E6%8B%A92-5%E7%BE%8E%E5%85%83%E7%9A%84%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">3.3.1.</span> <span class="nav-text">选择2.5美元的服务器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%9C%B0%E5%9D%80%E9%80%89%E6%8B%A9"><span class="nav-number">3.3.2.</span> <span class="nav-text">服务器地址选择</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%B3%BB%E7%BB%9F%E9%80%89%E6%8B%A9"><span class="nav-number">3.3.3.</span> <span class="nav-text">服务器系统选择</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%A3%81%E7%9B%98%E5%A4%A7%E5%B0%8F%E9%80%89%E6%8B%A9"><span class="nav-number">3.3.4.</span> <span class="nav-text">服务器磁盘大小选择</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8E%BB%E9%99%A4%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%87%AA%E5%8A%A8%E5%A4%87%E4%BB%BD%E5%8A%9F%E8%83%BD"><span class="nav-number">3.3.5.</span> <span class="nav-text">去除服务器自动备份功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">3.3.6.</span> <span class="nav-text">部署服务器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">3.3.7.</span> <span class="nav-text">查看服务器</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAV2Ray%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="nav-number">4.</span> <span class="nav-text">创建V2Ray服务端</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9E%E6%8E%A5vps%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">4.1.</span> <span class="nav-text">连接vps服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E9%94%AE%E9%83%A8%E7%BD%B2V2ray%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">4.2.</span> <span class="nav-text">一键部署V2ray服务器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%89%E8%A3%85v2ray"><span class="nav-number">4.2.1.</span> <span class="nav-text">安装v2ray</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A3%80%E6%B5%8Bv2ray%E7%AB%AF%E5%8F%A3%E5%A4%96%E7%BD%91%E6%98%AF%E5%90%A6%E5%8F%AF%E8%AE%BF%E9%97%AE"><span class="nav-number">4.2.2.</span> <span class="nav-text">检测v2ray端口外网是否可访问</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E9%94%AE%E5%8A%A0%E9%80%9FV2ray%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">4.3.</span> <span class="nav-text">一键加速V2ray服务器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E5%8A%A0%E9%80%9F%E5%86%85%E6%A0%B8"><span class="nav-number">4.3.1.</span> <span class="nav-text">安装加速内核</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BF%9E%E6%8E%A5"><span class="nav-number">5.</span> <span class="nav-text">客户端连接</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Mac%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BF%9E%E6%8E%A5v2ray%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">5.1.</span> <span class="nav-text">Mac客户端连接v2ray服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Android%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BF%9E%E6%8E%A5v2ray%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">5.2.</span> <span class="nav-text">Android客户端连接v2ray服务器</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Lyman"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Lyman</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/LymanYe" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;LymanYe" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:lymanye@gmail.com" title="E-Mail → mailto:lymanye@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Lyman">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Lyman">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="vultr+v2ray科学上网[翻墙]配置2022 | Lyman">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          vultr+v2ray科学上网[翻墙]配置2022
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-10-07 15:06:51" itemprop="dateCreated datePublished" datetime="2022-10-07T15:06:51+08:00">2022-10-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-10-30 11:26:32" itemprop="dateModified" datetime="2022-10-30T11:26:32+08:00">2022-10-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">网络</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2022/10/07/vultr&v2ray_scientific_internet_access/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2022/10/07/vultr&v2ray_scientific_internet_access/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><ul>
+<li><p>本博客适合小白一步步操作在自己的vps上搭建科学上网配置，并且对vps 服务器的要求不是很高，自己科学上网使用即可的用户服用。</p>
+</li>
+<li><p>vps服务器的选择国内国外都有很多，我们要做的操作首选国外的服务器（你懂的）开始博主想要弄oracle和Google的永久免费服务器，但是发现这些要一些国外的信用卡注册，属实太麻烦，然后发现比较稳定的有<a target="_blank" rel="noopener" href="https://bandwagonhost.com/">搬瓦工</a>的服务器，奈何贫穷限制了我的选择，博客今日时间点最便宜的需要49.99美元(354.22人名币)，最后各种倒腾得支持国内支付的，选择了<a target="_blank" rel="noopener" href="https://www.vultr.com/?ref=9246988-8H">vultr</a> 3.5美元&#x2F;月的, <font color=red>注意必须从我这个分享链接注册使用可以的到充值送100美元的福利</p>
+</font></li>
+</ul>
+<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><blockquote>
+<p> <strong>vps：</strong><a target="_blank" rel="noopener" href="https://www.vultr.com/?ref=9246988-8H">Vultr</a></p>
+<p><strong>vps系统OS：</strong>Ubuntu 18.04 LTS x64</p>
+<p><strong>v2ray版本：</strong>4.45.2</p>
+<p><strong>v2ray_util版本：</strong>3.10.9.6</p>
+<p><strong>本地电脑：</strong>Mac</p>
+</blockquote>
+<h2 id="购买Vultr服务器"><a href="#购买Vultr服务器" class="headerlink" title="购买Vultr服务器"></a>购买Vultr服务器</h2><h3 id="注册Vultr"><a href="#注册Vultr" class="headerlink" title="注册Vultr"></a>注册Vultr</h3><p>点击<a target="_blank" rel="noopener" href="https://www.vultr.com/?ref=9246988-8H">Vultr</a>进入注册页面,输入邮箱和密码创建账户</p>
+<img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665113427866.jpg" class="">
+
+<h3 id="充值10美元"><a href="#充值10美元" class="headerlink" title="充值10美元"></a>充值10美元</h3><p>这里支持选择支付宝付款，需要充值10美元才能开启部署服务器，可以看到右边的100美元的14天期限送的福利，充值后也就有110美元</p>
+<img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665113926827.jpg" class="">
+
+<h3 id="部署一台服务器"><a href="#部署一台服务器" class="headerlink" title="部署一台服务器"></a>部署一台服务器</h3><h4 id="选择2-5美元的服务器"><a href="#选择2-5美元的服务器" class="headerlink" title="选择2.5美元的服务器"></a>选择2.5美元的服务器</h4><p>这个是目前最便宜的了，我们基础的科学上网使用我这边个人使用来看是足够了</p>
+<img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665123752800.jpg" class="">
+
+<h4 id="服务器地址选择"><a href="#服务器地址选择" class="headerlink" title="服务器地址选择"></a>服务器地址选择</h4><p>这个我选择的New York（NJ）的服务器地址，这里你可以自己去随意挑选</p>
+<img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665124128081.jpg" class="">
+
+<h4 id="服务器系统选择"><a href="#服务器系统选择" class="headerlink" title="服务器系统选择"></a>服务器系统选择</h4><p>建议使用Ubuntu版本，后续的软件安装会搜索到资料比较广泛</p>
+<img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665124271960.jpg" class="">
+
+<h4 id="服务器磁盘大小选择"><a href="#服务器磁盘大小选择" class="headerlink" title="服务器磁盘大小选择"></a>服务器磁盘大小选择</h4><p>这个不同的大小价格会不同，我们不做巨大的数据量，我使用的3.5美元每月的就好了，这个可以带公网ipv4地址的功能会要多一美元，这个我要做连接服务器使用，2.5美元每月的只有ipv6地址（不然肯定选它..）</p>
+<img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665124818267.jpg" class="">
+
+<h4 id="去除服务器自动备份功能"><a href="#去除服务器自动备份功能" class="headerlink" title="去除服务器自动备份功能"></a>去除服务器自动备份功能</h4><p>这个功能会收取0.5美元每月的费用，我这边选择关闭此功能</p>
+<img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665124523603.jpg" class="">
+
+<h4 id="部署服务器"><a href="#部署服务器" class="headerlink" title="部署服务器"></a>部署服务器</h4><img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665125036525.jpg" class="">
+
+<h4 id="查看服务器"><a href="#查看服务器" class="headerlink" title="查看服务器"></a>查看服务器</h4><img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665125133271.jpg" class="">
+<p>点击服务器里面可以获取到我们的地址和服务器密码，后续在我们的本地电脑上通过IP和密码做ssh连接</p>
+<img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665125278290.jpg" class="">
+
+
+<h2 id="创建V2Ray服务端"><a href="#创建V2Ray服务端" class="headerlink" title="创建V2Ray服务端"></a>创建V2Ray服务端</h2><p>虚拟主机目前使用ssh的方式进行连接，如果是windows电脑百度使用Xshell工具软件进行连接vps使用，我使用的Mac电脑终端自带了ssh连接命令</p>
+<h3 id="连接vps服务器"><a href="#连接vps服务器" class="headerlink" title="连接vps服务器"></a>连接vps服务器</h3><p>打开电脑终端输入：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh root@104.156.225.196</span><br></pre></td></tr></table></figure></div>
+<p>粘贴vps创建的服务器密码进行连接</p>
+<img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665126021328.jpg" class="">
+<p>连接成功显示</p>
+<img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665128484391.jpg" class="">
+
+<h3 id="一键部署V2ray服务器"><a href="#一键部署V2ray服务器" class="headerlink" title="一键部署V2ray服务器"></a>一键部署V2ray服务器</h3><h4 id="安装v2ray"><a href="#安装v2ray" class="headerlink" title="安装v2ray"></a>安装v2ray</h4><p>安装命令</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> &lt;(curl -sL https://multi.netlify.app/v2ray.sh) --zh</span><br></pre></td></tr></table></figure></div>
+<p>升级命令(保留配置文件更新)：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> &lt;(curl -sL https://multi.netlify.app/v2ray.sh) -k</span><br></pre></td></tr></table></figure></div>
+<p>卸载命令：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> &lt;(curl -sL https://multi.netlify.app/v2ray.sh) --remove</span><br></pre></td></tr></table></figure></div>
+<p>使用安装命令粘贴在终端执行，等待命令执行完毕，完成界面</p>
+<img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665128956268.jpg" class="">
+<p>执行v2ray修改协议为websocket</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665129461949.jpg" class=""></div>
+修复<font color=red>v2ray restart fail !</font>错误，执行如下命令
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sed -i <span class="string">&quot;s/v2ray -config/v2ray run -config/g&quot;</span> /etc/systemd/system/v2ray.service.d/10-donot_touch_single_conf.conf</span><br><span class="line">systemctl daemon-reload</span><br><span class="line">v2ray update v4.45.2</span><br><span class="line">systemctl restart v2ray</span><br></pre></td></tr></table></figure></div>
+查看v2ray是否安装成功，出现这个表示已成功
+<img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665129800018.jpg" class="">
+
+<h4 id="检测v2ray端口外网是否可访问"><a href="#检测v2ray端口外网是否可访问" class="headerlink" title="检测v2ray端口外网是否可访问"></a>检测v2ray端口外网是否可访问</h4><ul>
+<li><p>在vps连接终端查看端口信息<br><code>cat /etc/v2ray/config.json</code><br>在inbounds中可以看到v2ray服务器的端口信息，使用<a target="_blank" rel="noopener" href="https://tool.chinaz.com/port">站长工具</a>检查一下IP和端口是可以访问的，如果不通的话需要关闭vps的防火墙配置</p>
+</li>
+<li><p>关闭防火墙</p>
+</li>
+</ul>
+<p>安装firewalld: </p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt install firewalld</span><br></pre></td></tr></table></figure></div>
+<p>停止firewall命令：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop firewalld.service</span><br></pre></td></tr></table></figure></div>
+<p>禁止firewall开机启动命令：systemctl disable firewalld.service</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl <span class="built_in">disable</span> firewalld.service</span><br></pre></td></tr></table></figure></div>
+<h3 id="一键加速V2ray服务器"><a href="#一键加速V2ray服务器" class="headerlink" title="一键加速V2ray服务器"></a>一键加速V2ray服务器</h3><p>执行命令</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget -N --no-check-certificate <span class="string">&quot;https://raw.githubusercontent.com/chiakge/Linux-NetSpeed/master/tcp.sh&quot;</span></span><br><span class="line"><span class="built_in">chmod</span> +x tcp.sh</span><br><span class="line">./tcp.sh</span><br></pre></td></tr></table></figure></div>
+<h4 id="安装加速内核"><a href="#安装加速内核" class="headerlink" title="安装加速内核"></a>安装加速内核</h4><div style="width:50%;margin:auto"><img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665131802400.jpg" class=""></div>
+#### 安装加速模块
+<div style="width:50%;margin:auto"><img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665132000188.jpg" class=""></div>
+如果出现这个选择no
+<img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665131918313.jpg" class="">
+
+<p>至此，服务端的配置全部完成，并且验证服务端没有啥问题</p>
+<h2 id="客户端连接"><a href="#客户端连接" class="headerlink" title="客户端连接"></a>客户端连接</h2><p>客户端每个终端需要下载不同的软件进行连接使用</p>
+<h3 id="Mac客户端连接v2ray服务器"><a href="#Mac客户端连接v2ray服务器" class="headerlink" title="Mac客户端连接v2ray服务器"></a>Mac客户端连接v2ray服务器</h3><p>Mac使用<a target="_blank" rel="noopener" href="https://github.com/yanue/V2rayU/releases">V2rayU</a>软件进行连接<br>查看vps远程服务器配置文件</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665134205990.jpg" class=""></div>
+
+<p>V2rayU配置<br>查看</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665134969825.jpg" class=""></div>
+
+<p>打开浏览器查看是否成功，如果无法成功需要看v2rayU的日志再来看哪里出了问题</p>
+<img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665135150951.jpg" class="">
+
+<h3 id="Android客户端连接v2ray服务器"><a href="#Android客户端连接v2ray服务器" class="headerlink" title="Android客户端连接v2ray服务器"></a>Android客户端连接v2ray服务器</h3><p>Android使用<a target="_blank" rel="noopener" href="https://apkpure.com/v2rayng/com.v2ray.ang/download">v2rayNG</a>软件进行连接<br>从上面的Mac桌面端配置文件中导出一个配置文件，放到手机的本地目录位置</p>
+<img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665135748869.jpg" class="">
+<p>选取上面倒入的配置文件</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665139835835.jpg" class=""></div>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/07/vultr&v2ray_scientific_internet_access/1665139985337.jpg" class=""></div>
+倒入后连接如果失败从这里查看日志信息，我有遇到一个需要修改本地的inbounds里面的端口，修改成一个未被占用的即可，其他错误根据错误来处理
+<div style="width:50%;margin:auto">
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>Lyman
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/" title="vultr+v2ray科学上网[翻墙]配置2022">https://lymanye.github.io/2022/10/07/vultr&v2ray_scientific_internet_access/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag"># 网络</a>
+              <a href="/tags/%E7%BF%BB%E5%A2%99/" rel="tag"># 翻墙</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/10/13/setup-git-server/" rel="next" title="服务器搭建Git服务端">
+                  服务器搭建Git服务端 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Lyman</span>
+  <span class="post-meta-divider">|</span>
+  <span id="busuanzi_container_site_pv">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    访问量：<span id="busuanzi_value_site_pv"></span> 次数
+  </span>
+
+  <span class="post-meta-divider">|</span>
+  <span id="busuanzi_container_site_uv">
+    访客数：<span id="busuanzi_value_site_uv"></span> 人次
+  </span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">51k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">47 分钟</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lozad.js/1.16.0/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pangu/4.0.7/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script><script src="/js/code-unfold.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"http://104.156.225.196:8360","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":true,"pageview":false,"placeholder":"请文明评论呀","avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"visitor":true,"comment_count":true,"requiredFields":[],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2022/10/07/vultr&v2ray_scientific_internet_access/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>

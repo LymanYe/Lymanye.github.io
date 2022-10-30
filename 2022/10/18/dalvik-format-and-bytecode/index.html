@@ -1,0 +1,2288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 6.3.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"lymanye.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.13.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"show_result":true,"style":"mac"},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":true,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Android 4.4之后Google使用ART（Android Runtime）虚拟机，将由JIT执行的Dalvik切换为AOT编译的ART。ART可以完整的对Dalvik可执行格式以及字节码规范支持，本节我们先了解Dalvik虚拟机的特性以及Dalvik字节码的汇编语言，为后面了解ART虚拟机打基础。 Dalvik虚拟机Dalvik虚拟机于2007年年底正式发布了了Android SDK，Da">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Dalvik 格式与字节码规范">
+<meta property="og:url" content="https://lymanye.github.io/2022/10/18/dalvik-format-and-bytecode/index.html">
+<meta property="og:site_name" content="Lyman">
+<meta property="og:description" content="Android 4.4之后Google使用ART（Android Runtime）虚拟机，将由JIT执行的Dalvik切换为AOT编译的ART。ART可以完整的对Dalvik可执行格式以及字节码规范支持，本节我们先了解Dalvik虚拟机的特性以及Dalvik字节码的汇编语言，为后面了解ART虚拟机打基础。 Dalvik虚拟机Dalvik虚拟机于2007年年底正式发布了了Android SDK，Da">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/18/dalvik-format-and-bytecode/1666057320770.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/18/dalvik-format-and-bytecode/20221018-191004@2x.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/18/dalvik-format-and-bytecode/1666095337042.jpg">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/18/dalvik-format-and-bytecode/1666102809575.jpg">
+<meta property="article:published_time" content="2022-10-18T02:21:08.000Z">
+<meta property="article:modified_time" content="2022-10-30T03:26:32.383Z">
+<meta property="article:author" content="Lyman">
+<meta property="article:tag" content="Android逆向">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://lymanye.github.io/2022/10/18/dalvik-format-and-bytecode/1666057320770.jpg">
+
+
+<link rel="canonical" href="https://lymanye.github.io/2022/10/18/dalvik-format-and-bytecode/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://lymanye.github.io/2022/10/18/dalvik-format-and-bytecode/","path":"2022/10/18/dalvik-format-and-bytecode/","title":"Dalvik 格式与字节码规范"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Dalvik 格式与字节码规范 | Lyman</title>
+  
+
+
+
+
+
+<link rel="dns-prefetch" href="http://104.156.225.196:8360">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Lyman</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">6</span></a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">9</span></a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">7</span></a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Dalvik%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-number">1.</span> <span class="nav-text">Dalvik虚拟机</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Dalvik%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9A%84%E7%89%B9%E7%82%B9"><span class="nav-number">1.1.</span> <span class="nav-text">Dalvik虚拟机的特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dalvik%E8%99%9A%E6%8B%9F%E6%9C%BA%E4%B8%8EJava%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">1.2.</span> <span class="nav-text">Dalvik虚拟机与Java虚拟机的区别</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81%E4%B8%8D%E5%90%8C%EF%BC%9A"><span class="nav-number">1.2.1.</span> <span class="nav-text">运行的字节码不同：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Dalvik%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%96%87%E4%BB%B6%E4%BD%93%E7%A7%AF%E6%9B%B4%E5%B0%8F"><span class="nav-number">1.2.2.</span> <span class="nav-text">Dalvik可执行文件体积更小</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%9E%B6%E6%9E%84%E4%B8%8D%E5%90%8C"><span class="nav-number">1.2.3.</span> <span class="nav-text">虚拟机架构不同</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%86%E6%9E%90%E5%AD%97%E8%8A%82%E7%A0%81%E6%96%87%E4%BB%B6"><span class="nav-number">1.2.4.</span> <span class="nav-text">分析字节码文件</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Java%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">1.2.4.1.</span> <span class="nav-text">Java字节码分析</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Dex%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">1.2.4.2.</span> <span class="nav-text">Dex字节码分析</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9A%84%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="nav-number">1.3.</span> <span class="nav-text">虚拟机的执行流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9A%84%E6%89%A7%E8%A1%8C%E6%96%B9%E5%BC%8F"><span class="nav-number">1.4.</span> <span class="nav-text">虚拟机的执行方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dalvik%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80"><span class="nav-number">2.</span> <span class="nav-text">Dalvik语言基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Dalvik%E6%8C%87%E4%BB%A4%E6%A0%BC%E5%BC%8F"><span class="nav-number">2.1.</span> <span class="nav-text">Dalvik指令格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DEX%E5%8F%8D%E6%B1%87%E7%BC%96%E5%B7%A5%E5%85%B7"><span class="nav-number">2.2.</span> <span class="nav-text">DEX反汇编工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dalvik%E5%AF%84%E5%AD%98%E5%99%A8"><span class="nav-number">2.3.</span> <span class="nav-text">Dalvik寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dalvik%E5%AD%97%E8%8A%82%E7%A0%81"><span class="nav-number">2.4.</span> <span class="nav-text">Dalvik字节码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.4.1.</span> <span class="nav-text">类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%B3%95"><span class="nav-number">2.4.2.</span> <span class="nav-text">方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AD%97%E6%AE%B5"><span class="nav-number">2.4.3.</span> <span class="nav-text">字段</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dalvik%E6%8C%87%E4%BB%A4%E9%9B%86"><span class="nav-number">3.</span> <span class="nav-text">Dalvik指令集</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%87%E4%BB%A4%E7%B1%BB%E5%9E%8B"><span class="nav-number">3.1.</span> <span class="nav-text">指令类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dalvik%E6%8C%87%E4%BB%A4%E7%BB%83%E4%B9%A0"><span class="nav-number">3.2.</span> <span class="nav-text">Dalvik指令练习</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%96%E5%86%99HelloWorld-smali%E6%96%87%E4%BB%B6"><span class="nav-number">3.2.1.</span> <span class="nav-text">编写HelloWorld.smali文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%96%E8%AF%91smali%E6%96%87%E4%BB%B6"><span class="nav-number">3.2.2.</span> <span class="nav-text">编译smali文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E8%BF%90%E8%A1%8CDEX%E6%96%87%E4%BB%B6"><span class="nav-number">3.2.3.</span> <span class="nav-text">测试运行DEX文件</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Lyman"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Lyman</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/LymanYe" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;LymanYe" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:lymanye@gmail.com" title="E-Mail → mailto:lymanye@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://lymanye.github.io/2022/10/18/dalvik-format-and-bytecode/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Lyman">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Lyman">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Dalvik 格式与字节码规范 | Lyman">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Dalvik 格式与字节码规范
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-10-18 10:21:08" itemprop="dateCreated datePublished" datetime="2022-10-18T10:21:08+08:00">2022-10-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-10-30 11:26:32" itemprop="dateModified" datetime="2022-10-30T11:26:32+08:00">2022-10-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Android/%E9%80%86%E5%90%91/" itemprop="url" rel="index"><span itemprop="name">逆向</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Android/%E9%80%86%E5%90%91/%E3%80%8AAndroid%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8%E6%9D%83%E5%A8%81%E6%8C%87%E5%8D%97%E3%80%8B%E5%AE%9E%E8%B7%B5%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">《Android软件安全权威指南》实践笔记</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2022/10/18/dalvik-format-and-bytecode/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2022/10/18/dalvik-format-and-bytecode/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>24k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>21 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>Android 4.4之后Google使用ART（Android Runtime）虚拟机，将由JIT执行的Dalvik切换为AOT编译的ART。ART可以完整的对Dalvik可执行格式以及字节码规范支持，本节我们先了解Dalvik虚拟机的特性以及Dalvik字节码的汇编语言，为后面了解ART虚拟机打基础。</p>
+<h2 id="Dalvik虚拟机"><a href="#Dalvik虚拟机" class="headerlink" title="Dalvik虚拟机"></a>Dalvik虚拟机</h2><p>Dalvik虚拟机于2007年年底正式发布了了Android SDK，Dalvik虚拟机开始进入人们的视野。</p>
+<h3 id="Dalvik虚拟机的特点"><a href="#Dalvik虚拟机的特点" class="headerlink" title="Dalvik虚拟机的特点"></a>Dalvik虚拟机的特点</h3><ul>
+<li>体积小，占用内存空间少</li>
+<li>专有的DEX可执行文件格式，体积小，执行速度快</li>
+<li>常量池采用32位索引值，对方法名，字段名，常量的寻址速度快</li>
+<li>基于寄存器架构，同时拥有一套完整的指令系统</li>
+<li>提供了对象生命周期管理，堆栈管理，线程管理，安全和异常以及垃圾回收等功能</li>
+<li>所有的Android程序都运行在Android系统进程中，每个进程都与一个Dalvik虚拟机实例对应</li>
+</ul>
+<h3 id="Dalvik虚拟机与Java虚拟机的区别"><a href="#Dalvik虚拟机与Java虚拟机的区别" class="headerlink" title="Dalvik虚拟机与Java虚拟机的区别"></a>Dalvik虚拟机与Java虚拟机的区别</h3><p>Dalvik虚拟机与Java虚拟机互不兼容，有如下主要区别</p>
+<h4 id="运行的字节码不同："><a href="#运行的字节码不同：" class="headerlink" title="运行的字节码不同："></a>运行的字节码不同：</h4><p>Java虚拟机运行Java字节码，Dalvik虚拟机运行Dalvik字节码。</p>
+<table>
+<thead>
+<tr>
+<th align="center">Java虚拟机</th>
+<th align="center">Dalvik虚拟机</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">运行Java字节码</td>
+<td align="center">运行Dalvik字节码</td>
+</tr>
+<tr>
+<td align="center">解码class文件执行</td>
+<td align="center">解码Dex（class转换来）文件执行</td>
+</tr>
+</tbody></table>
+<h4 id="Dalvik可执行文件体积更小"><a href="#Dalvik可执行文件体积更小" class="headerlink" title="Dalvik可执行文件体积更小"></a>Dalvik可执行文件体积更小</h4><p>将Java字节码转换为Dalvik字节码是由dx(androidsdk&#x2F;build-tools&#x2F;30.0.1&#x2F;dx)工具完成。dx能重新排列Java类文件，消除在类文件中出现的所有冗余信息，虚拟机在初始化时反复加载和解析文件。<br>Java类文件中通常有多个方法签名，如果其他类文件引用了该类文件的方法，相应的方法签名也会被复制到其他类文件中。也就是说如果多个不同的类同时保护相同的签名方法，大量的字符串常量会被多个类文件重复使用。这些冗余信息造成文件体积增大会严重影响虚拟机解析文件的效率。</p>
+<p>dx对所有Java类文件中的常量池进行分解，消除其中的冗余信息，然后将它们重新组合成一个常量池，并让所有类文件共享这个常量池。</p>
+<p>使用dx将Java文件转换为DEX的过程，如下图所示，基于dx对常量池的压缩，相同的字符串和常量在DEX文件中只会出现一次</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/18/dalvik-format-and-bytecode/1666057320770.jpg" class=""></div>
+
+<h4 id="虚拟机架构不同"><a href="#虚拟机架构不同" class="headerlink" title="虚拟机架构不同"></a>虚拟机架构不同</h4><ul>
+<li>Java虚拟机基于栈架构：当程序运行时，Java虚拟机会频繁的对栈进行读写数据的操作。这个过程中，不仅会多次进行指令的分派和内存访问，而且会消耗大量的CPU时间。对手机不友好</li>
+<li>Dalvik虚拟机基于寄存器架构：数据的访问直接在寄存器之间传递，比栈的方式要快很多</li>
+</ul>
+<h4 id="分析字节码文件"><a href="#分析字节码文件" class="headerlink" title="分析字节码文件"></a>分析字节码文件</h4><p>使用如下代码学习Java字节码和Dalvik字节码的区别，测试代码Hello.java如下：<br>    <div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public class Hello &#123;</span><br><span class="line">public int foo(int a, int b) &#123;</span><br><span class="line">   		<span class="built_in">return</span> (a + b) * (a - b);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">public static void main(String[] args) &#123;</span><br><span class="line">		Hello hello = new Hello();</span><br><span class="line">		System.out.println(hello.foo(5, 3));</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div></p>
+<h5 id="Java字节码分析"><a href="#Java字节码分析" class="headerlink" title="Java字节码分析"></a>Java字节码分析</h5><p>编译Java源文件，指定JDK 8对应（1.8）：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javac -<span class="built_in">source</span> 1.8 -target 1.8 Hello.java </span><br></pre></td></tr></table></figure></div>
+<br>
+
+<p>使用javap反编译Hello.class，查看foo()函数的Java字节码：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javap -c -classpath . Hello</span><br></pre></td></tr></table></figure></div>
+<br>
+得到Hello.class的Java字节码信息：
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public int foo(int, int);</span><br><span class="line">Code:</span><br><span class="line">   0: iload_1</span><br><span class="line">   1: iload_2</span><br><span class="line">   2: iadd</span><br><span class="line">   3: iload_1</span><br><span class="line">   4: iload_2</span><br><span class="line">   5: isub</span><br><span class="line">   6: imul</span><br><span class="line">   7: ireturn</span><br></pre></td></tr></table></figure></div>
+<br>
+以上Java字节码占8字节，代码中的每条指令占用1字节且没有参数，它是如何存取数据的勒？
+Java程序每个线程执行时都有一个PC计数器和一个Java栈。PC计数器以字节为单位记录当前运行位置和方法开头之间的偏移量，PC计数器只对当前方法有效，Java虚拟机通过它的值来取指令并执行。Java栈用于记录Java方法调用的活动记录，以帧（frame）为单位保存线程运行状态：每调用一个方法，就会分配一个新的栈帧并压入Java栈；每从一个方法返回，则弹出并撤销相应的栈帧。每个栈帧都包括局部变量区，求值栈（JVM规范中称其为操作数栈）及其他信息。局部变量区用于存储方法的参数和局部变量，参数安装源码中从左到右的顺序保存在局部变量区开头的几个slot中。
+开始分析以上指令信息：
+
+<ul>
+<li><p>0: iload_1<br>这个指令分为iload和1两个部分，iload时JVM指令集load系列指令中的一条。i是指令前缀，表示操作类型为int；load表示局部变量存入Java栈；第二部分表示要操作的是哪个局部变量。索引值从0开始计数。iload_1表示使第二个int类型的局部变量入栈，而这个局部变量就是存放在局部变量区foo（）函数的第二个参数。</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/18/dalvik-format-and-bytecode/20221018-191004@2x.png" class=""></div>
+</li>
+<li><p>1: iload_2:用于取第三个参数</p>
+</li>
+<li><p>2: iadd：用于从栈顶弹出两个int类型的值并把它们求和，把结果压入栈顶</p>
+</li>
+<li><p>3: iload_1，4: iload_2：再次压入第2个和第3个参数。</p>
+</li>
+<li><p>5: isub：用于从栈顶弹出两个int类型的值并求差，把结果压入栈顶</p>
+</li>
+<li><p>7: ireturn：用于返回一个int类型的值</p>
+</li>
+</ul>
+<p>详细了解Java虚拟机字节码的其他内容可以看这里：<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/List_of_Java_bytecode_instructions">https://en.wikipedia.org/wiki/List_of_Java_bytecode_instructions</a></p>
+<h5 id="Dex字节码分析"><a href="#Dex字节码分析" class="headerlink" title="Dex字节码分析"></a>Dex字节码分析</h5><p>把生成的<a href="Hello.class">Hello.class</a>文件用于生成<a href="Hello.dex">Hello.dex</a>DEX文件，使用dx工具：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./dx --dex --output=Hello.dex Hello.class</span><br></pre></td></tr></table></figure></div>
+<br>
+
+<p>使用dexdump(位于androidsdk&#x2F;build-tools&#x2F;30.0.1&#x2F;)执行如下代码查看Dalvik字节码foo()方法</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./dexdump -d Hello.dex</span><br></pre></td></tr></table></figure></div>
+<p>得到如下字节码文件：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"> Virtual methods   -</span><br><span class="line">    <span class="comment">#0              : (in LHello;)</span></span><br><span class="line">      name          : <span class="string">&#x27;foo&#x27;</span></span><br><span class="line">      <span class="built_in">type</span>          : <span class="string">&#x27;(II)I&#x27;</span></span><br><span class="line">      access        : 0x0001 (PUBLIC)</span><br><span class="line">      code          -</span><br><span class="line">      registers     : 5</span><br><span class="line">      ins           : 3</span><br><span class="line">      outs          : 0</span><br><span class="line">      insns size    : 6 16-bit code units</span><br><span class="line">000198:                                        |[000198] Hello.foo:(II)I</span><br><span class="line">0001a8: 9000 0304                              |0000: add-int v0, v3, v4</span><br><span class="line">0001ac: 9101 0304                              |0002: sub-int v1, v3, v4</span><br><span class="line">0001b0: b210                                   |0004: mul-int/2addr v0, v1</span><br><span class="line">0001b2: 0f00                                   |0005: <span class="built_in">return</span> v0</span><br><span class="line">      catches       : (none)</span><br><span class="line">      positions     : </span><br><span class="line">        0x0000 line=3</span><br><span class="line">      locals        : </span><br><span class="line">        0x0000 - 0x0006 reg=2 this LHello; </span><br><span class="line">        0x0000 - 0x0006 reg=3 (null) I </span><br><span class="line">        0x0000 - 0x0006 reg=4 (null) I</span><br></pre></td></tr></table></figure></div>
+<br>
+其他的描述信息不用看，Dalvik虚拟机只用了四条指令完成以上计算：
+
+<ul>
+<li>add-int v0, v3, v4：用于将v3和v4寄存器相加，将结果保存在v0寄存器中。v3&amp;v4表示函数的第一和第二个参数</li>
+<li>sub-int v1, v3, v4：用于将v3&amp;v4寄存器相减，将结果保存在v1寄存器中</li>
+<li>mul-int&#x2F;2addr v0, v1：将v0和v1寄存器相乘，将结果保存在v0寄存器中</li>
+<li>return v0：返回v0寄存器的值</li>
+</ul>
+<p>Dalvik虚拟机运行时为每个线程也维护了一个PC计数器和一个调用栈。与Java虚拟机不同的是，这个调用栈维护了一个寄存器列表，寄存器的数量在方法结构体register字段中给出。Dalvik虚拟机会根据这个值来创建一份虚拟的寄存器列表。虚拟机运行状态如下图：</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/18/dalvik-format-and-bytecode/1666095337042.jpg" class=""></div>
+可以看出Dalvik虚拟机生成的代码指令减少了，在程序上执行速度会快一点。
+
+<h3 id="虚拟机的执行流程"><a href="#虚拟机的执行流程" class="headerlink" title="虚拟机的执行流程"></a>虚拟机的执行流程</h3><p>Android 系统启动并加载内核后，会立即执行init进程。init进程先完成设备的初始化工作，再读取init.rc文件并启动系统中重要的外部程序Zygote。</p>
+<p>Zygote是Android系统中所有进程的孵化器进程。Zygote启动后会先执行Dalvik虚拟机，再启动system_server进程并进入Zygote模式，通过socket等侯命令的下达。在执行一个Android<br>应用程序时，system_server进程通过Binder IPC的方式将命令发送给Zygote。Zygote收到命令后，通过fork其自身创建一个Dalvik虚拟机的实例来执行应用程序的入口函数，完成程序的启动过程，如下图所示：</p>
+<div style="width:80%;margin:auto"><img data-src="/2022/10/18/dalvik-format-and-bytecode/1666102809575.jpg" class=""></div>
+Zygote提供三种创建进程方式：
+
+<ul>
+<li>fork： 创建一个Zygote进程（这种方式实际上不会被调用）</li>
+<li>forkAndSpecialize：创建一个非Zygote进程</li>
+<li>forkSystemServer：创建一个系统服务进程</li>
+</ul>
+<p>进程fork成功后，执行工作将交给Dalvik虚拟机来完成。</p>
+<p>Dalvik虚拟机通过loadClassFromDex装载类。每个类成功解析后，有一个运行时的一个ClassObject类型的数据结构。接下来字节码验证器使用dvmVerifyCodeFlow函数对装入代码验证，虚拟机调用FindClass函数并装载main方法类。最后虚拟机调用dvmInterpret函数来初始化解释器并执行字节码流。</p>
+<h3 id="虚拟机的执行方式"><a href="#虚拟机的执行方式" class="headerlink" title="虚拟机的执行方式"></a>虚拟机的执行方式</h3><p>即时编译（JIT）又称为动态编译，是一种通过运行时将字节码翻译为机器码使得程序的执行速度加快的技术。主流的JIT包括两种字节码编译方式：</p>
+<ul>
+<li>method方式：以函数为单位进行编译</li>
+<li>trace方式：以trace为单位进行编译。只有少数代码是顺序执行的，多数代码都有好几条执行路径，而其中一些路径在实际运行过程中很少执行，这部分路径称为“冷路径”（执行比较频繁的路径为“热路径”）。method方式会编译整个方法的代码，从而在冷路径上耗费很多的编译时间和内存。使用trace方式进行编译，则能快速获取热路径的代码，缩短编译时间和内存。</li>
+</ul>
+<p>Dalvik虚拟机默认使用trace方式编译代码，同时支持method方式</p>
+<h2 id="Dalvik语言基础"><a href="#Dalvik语言基础" class="headerlink" title="Dalvik语言基础"></a>Dalvik语言基础</h2><p>Dalvik虚拟机有专门的指令集及指令格式（Dalvik Executable Format）和调用规范。由Dalvik指令集组成的代码称为Dalvik汇编代码，由这种代码表示的语言称为Dalvik汇编语言。</p>
+<h3 id="Dalvik指令格式"><a href="#Dalvik指令格式" class="headerlink" title="Dalvik指令格式"></a>Dalvik指令格式</h3><p>Dalvik汇编代码由一些列Dalvik指令组成，指令语法由指令的位描述和指令格式标识决定。位描述约定如下：</p>
+<ul>
+<li>每16位的字用空格分开。</li>
+<li>每个字母表示4位，每个字母按顺序从高字节到低字节排列，每4位之间可能使用竖线“｜”将不同的内容分开。</li>
+<li>顺序采用英文大写字母A～Z表示4位操作码。op表示8位操作码。</li>
+<li>Ø表示字段所有位的值为0</li>
+</ul>
+<p>以指令格式“A|G|op BBBB F|E|D|C”为例进行分析。两个空格把指令分为大小均为16位的三部分，因此，这条指令由三个16位的字组成。<br>第一个16位部分：“A|G|op”，其高8位由“A”和“G”组成，低字节由“op”组成。第二个16位部分由“BBBB”组成，表示一个16位的偏移量。第三个16位部分由“F”“E”“D”“C”四个字节组成，它们分别表示寄存器的参数。</p>
+<p>单独使用位标识无法确定一条指令，需要通过指令格式标识来指定指令的格式编码，约定如下：</p>
+<ul>
+<li>指令格式标识大都由三个字符组成。其中前两个是数字，后一个是字母</li>
+<li>第1个数字表示指令由多少个16位的字组成</li>
+<li>第2个数字表示指令最多使用的寄存器的个数。特殊标记r用于标识使用的寄存器的范围</li>
+<li>第3个字母为类型码，表示指令所使用的额外数据类型</li>
+</ul>
+<p>以指令格式标识“22x”为例，第1个数字2表示指令由两个16位字组成，第2个数字2表示指令使用两个寄存器，字母x表示没有使用额外的数据。<br>Dalvik指令对语法进行了一些说明，约定如下：</p>
+<ul>
+<li>每条指令都是从操作码开始的，后面紧跟参数。参数的个数不定，参数之间用逗号分隔</li>
+<li>每条指令参数都是从指令的第一部分开始。op位于低8位。高8位可以是一个8位的参数，也可以是两个4位的参数，还可以为空。如果指令超过16位，则将之后的部分依次作为参数</li>
+<li>如果参数采用“vX”的形式表示，说明它是一个寄存器，例如v0,v1</li>
+<li>如果参数参与“#+X”的形式表示，说明它是一个常量数字</li>
+<li>如果参数采用“+X”的形式表示，说明它是一个相对指令的地址偏移量</li>
+<li>如果参数采用“kind@X”的形式，说明它是一个常量池索引值。其中“kind”表示常量池的类型，可以是string（字符串常量池索引），type（类型常量池索引），filed（字段常量池索引）或者meth（方法常量池索引）</li>
+</ul>
+<p>以指令op vAA, string@BBBB为例：使用了一个寄存器参数vAA，附加了一个字符串常量池索引值string@BBBB。这种指令格式表示const-string指令</p>
+<h3 id="DEX反汇编工具"><a href="#DEX反汇编工具" class="headerlink" title="DEX反汇编工具"></a>DEX反汇编工具</h3><p>上面使用了dexdump工具，还有一个第三方的<a target="_blank" rel="noopener" href="https://bitbucket.org/JesusFreke/smali/downloads/">baksmali</a><br>使用baksmali反汇编Hello.dex,会在当前目录out下面生成<a href="Hello.smali">Hello.smali</a>文件</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar baksmali-2.5.2.jar d Hello.dex</span><br></pre></td></tr></table></figure></div>
+<p>查看Hello.smali文件的foo方法：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># virtual methods</span></span><br><span class="line">.method public foo(II)I</span><br><span class="line">    .registers 5</span><br><span class="line"></span><br><span class="line">    .prologue</span><br><span class="line">    .line 3</span><br><span class="line">    add-int v0, p1, p2</span><br><span class="line"></span><br><span class="line">    sub-int v1, p1, p2</span><br><span class="line"></span><br><span class="line">    mul-int/2addr v0, v1</span><br><span class="line"></span><br><span class="line">    <span class="built_in">return</span> v0</span><br><span class="line">.end method</span><br></pre></td></tr></table></figure></div>
+<p>和使用dexdump反汇编的指令序列一致。寄存器表示dexdump使用的“v”开头，baksmail使用“v”和“p”开头。<br>baksmali提供反汇编的功能，也支持使用smali打包反汇编代码来重新生成DEX文件。</p>
+<h3 id="Dalvik寄存器"><a href="#Dalvik寄存器" class="headerlink" title="Dalvik寄存器"></a>Dalvik寄存器</h3><p>Dalvik虚拟机在特点架构的CPU上运行，在设计之初采用ARM架构。ARM架构的CPU本身集成了多个寄存器，Dalvik将部分寄存器映射到ARM寄存器上，还有一部分通过调用栈模拟。</p>
+<ul>
+<li>Dalvik虚拟机支持多少个寄存器：语法格式op vAAAA, vBBBB其中每个大写字母代表4位。所以最大值为2的16方-1，即为65535.寄存器初始地址为v0,范围为v0~65535</li>
+<li>Dalvik虚拟机是如何虚拟使用寄存器的：Dalvik虚拟机为每个进程维护一个调用栈，这个栈的作用之一就是“虚拟”寄存器。每个函数在头部使用.registers来指定使用寄存器的数目，虚拟机执行这个函数时，会根据寄存器的数目分配适当的栈空间，这些空间就是用来存放寄存器的实际值。</li>
+</ul>
+<h3 id="Dalvik字节码"><a href="#Dalvik字节码" class="headerlink" title="Dalvik字节码"></a>Dalvik字节码</h3><p>Dalvik字节码有自己的类型，方法和字段表示方法，和Dalvik虚拟机指令集一起组成Dalvik汇编代码</p>
+<h4 id="类型"><a href="#类型" class="headerlink" title="类型"></a>类型</h4><p>Dalvik字节码分为基本类型和引用类型。Dalvik使用这两种类型表示Java的全部类型。除了对象和数组属于引用类型，其他的Java类型都属于基本类型。<br>Dalvik字节码类型描述符如下表：</p>
+<table>
+<thead>
+<tr>
+<th align="left">语法</th>
+<th align="left">含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">v</td>
+<td align="left">void,只用于返回值类型</td>
+</tr>
+<tr>
+<td align="left">Z</td>
+<td align="left">boolean</td>
+</tr>
+<tr>
+<td align="left">B</td>
+<td align="left">byte</td>
+</tr>
+<tr>
+<td align="left">S</td>
+<td align="left">short</td>
+</tr>
+<tr>
+<td align="left">C</td>
+<td align="left">char</td>
+</tr>
+<tr>
+<td align="left">I</td>
+<td align="left">int</td>
+</tr>
+<tr>
+<td align="left">J</td>
+<td align="left">long</td>
+</tr>
+<tr>
+<td align="left">F</td>
+<td align="left">float</td>
+</tr>
+<tr>
+<td align="left">D</td>
+<td align="left">double</td>
+</tr>
+<tr>
+<td align="left">L</td>
+<td align="left">Java类类型（汇编语言中用”Lpackage&#x2F;name&#x2F;ObjectName;”表示）</td>
+</tr>
+<tr>
+<td align="left">[</td>
+<td align="left">数组类型（汇编语言中用”[I”表示一维int数组）</td>
+</tr>
+</tbody></table>
+<p>每个Dalvik寄存器都是32位。长度小于等于32位的类型，只用一个寄存器就可以存放，对于J，D等64位的类型，要用两个相邻的寄存器来存放</p>
+<h4 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h4><p>Dalvik使用方法名，类型参数和返回值来描述一个方法：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Lpackage/name/ObjectName;-&gt;MethodName(III)Z</span><br></pre></td></tr></table></figure></div>
+<br>
+L后面表示Java类类型，MethodName方法，参数位三个int，返回值为一个boolean类型
+baksmali生成的方法以.method指令开始，以.end method指令结束，方法类型不同在方法指令前用“#”添加注释.
+
+<h4 id="字段"><a href="#字段" class="headerlink" title="字段"></a>字段</h4><p>字段与方法类似，只是字段没有方法签名域中的参数和返回值，取代它们的是字段类型。格式如下：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Lpackage/name/ObjectName;-&gt;FiledName:Ljava/lang/String;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+<br>
+Lpackage/name/ObjectName; ：字段所属类
+FiledName：字段名称
+Ljava/lang/String; ：字段类型
+
+<p>baksmali生成的字段以.filed开头</p>
+<h2 id="Dalvik指令集"><a href="#Dalvik指令集" class="headerlink" title="Dalvik指令集"></a>Dalvik指令集</h2><p>Dalvik指令集使用单字节的指令助记符号。</p>
+<h3 id="指令类型"><a href="#指令类型" class="headerlink" title="指令类型"></a>指令类型</h3><p>Dalvik 虚拟机指令类型有如下基本约定:</p>
+<ul>
+<li>Dalvik 寄存器都是32位的，64位数据使用相邻两个寄存器来存储</li>
+<li>常规类型的 32 位运算码未做任何标记,64 位操作码以 -wide 作为后缀</li>
+<li>一般指令中目标寄存器在前，源寄存器在后</li>
+<li>寄存器最大数量为 65536 个</li>
+<li>一个大写字母表示4位。如vA 表示前16个寄存器之内，vBB表示前256个寄存器之内，vCCCC表示前65536个寄存器之内</li>
+</ul>
+<p>下表列出所有指令其中表头解释如下：</p>
+<ul>
+<li>操作码 ：十六进制，范围 00 - ff</li>
+<li>格式码 ：一般三个字符，前两个为数字，最后为字母。第一个数字表示指令有多少个 16 位的字组成。第二个数字表示指令最多使用的寄存器个数。第三个字母是类型码，表示指令所使用的额外数据的类型。</li>
+<li>语法 ：助记符，smali 语法中就这么表示</li>
+<li>说明 : 指令解释</li>
+</ul>
+<details>
+<summary>下表列出00-ff操作码相关的指令</summary>
+
+<table>
+<thead>
+<tr>
+<th>操作码</th>
+<th>格式码</th>
+<th>语法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>00</td>
+<td>10x</td>
+<td>nop</td>
+<td>空指令</td>
+</tr>
+<tr>
+<td>01</td>
+<td>12x</td>
+<td>move vA, vB</td>
+<td>将寄存器 vB 的内容赋给寄存器 vA</td>
+</tr>
+<tr>
+<td>02</td>
+<td>22x</td>
+<td>move&#x2F;from16 vAA, vBBBB</td>
+<td>将寄存器 vBBBB 的内容赋给寄存器 vAA。vAA 范围是 0-255，vBBBB 范围是 0-65535</td>
+</tr>
+<tr>
+<td>03</td>
+<td>32x</td>
+<td>move&#x2F;16 vAAAA, vBBBB</td>
+<td>将寄存器 vBBBB 的内容赋给寄存器 vAAAA。两个寄存器范围都是 0-65535</td>
+</tr>
+<tr>
+<td>04</td>
+<td>12x</td>
+<td>move-wide vA, vB</td>
+<td>将寄存器对 vB 的内容赋给寄存器对 vA</td>
+</tr>
+<tr>
+<td>05</td>
+<td>22x</td>
+<td>move-wide&#x2F;from16 vAA, vBBBB</td>
+<td>将寄存器对 vBBBB 的内容赋给寄存器对 vAA</td>
+</tr>
+<tr>
+<td>06</td>
+<td>32x</td>
+<td>move-wide&#x2F;16 vAAAA, vBBBB</td>
+<td>将寄存器对 vBBBB 的内容赋给寄存器对 vAAAA</td>
+</tr>
+<tr>
+<td>07</td>
+<td>12x</td>
+<td>move-object vA, vB</td>
+<td>将寄存器 vB 中的对象引用赋给寄存去 vA</td>
+</tr>
+<tr>
+<td>08</td>
+<td>22x</td>
+<td>move-object&#x2F;from16 vAA, vBBBB</td>
+<td>将寄存器 vBBBB 中的对象引用赋给寄存对 vAA</td>
+</tr>
+<tr>
+<td>09</td>
+<td>32x</td>
+<td>move-object&#x2F;16 vAAAA, vBBBB</td>
+<td>将寄存器 vBBBB 中的对象引用赋给寄存去 vAAAA</td>
+</tr>
+<tr>
+<td>0a</td>
+<td>11x</td>
+<td>move-result vAA</td>
+<td>将上一个 invoke-kind 指令的单字非对象结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>0b</td>
+<td>11x</td>
+<td>move-result-wide vAA</td>
+<td>将上一个 invoke-kind 指令的双字非对象结果存入寄存器 vAA，vAA+1</td>
+</tr>
+<tr>
+<td>0c</td>
+<td>11x</td>
+<td>move-result-object vAA</td>
+<td>将上一个 invoke-kind 指令的对象结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>0d</td>
+<td>11x</td>
+<td>move-exception vAA</td>
+<td>将方法执行过程中抛出的异常存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>0e</td>
+<td>10x</td>
+<td>return-void</td>
+<td>返回 void</td>
+</tr>
+<tr>
+<td>0f</td>
+<td>11x</td>
+<td>return vAA</td>
+<td>返回 32 位非对象值</td>
+</tr>
+<tr>
+<td>10</td>
+<td>11x</td>
+<td>return-wide vAA</td>
+<td>返回 64 位非对象值</td>
+</tr>
+<tr>
+<td>11</td>
+<td>11x</td>
+<td>return-object vAA</td>
+<td>返回对象引用</td>
+</tr>
+<tr>
+<td>12</td>
+<td>11n</td>
+<td>const&#x2F;4 vA, #+B</td>
+<td>将给定的 4 位字面值符号扩展为 32 位之后赋给寄存器 vA</td>
+</tr>
+<tr>
+<td>13</td>
+<td>21s</td>
+<td>const&#x2F;16 vAA, #+BBBB</td>
+<td>将给定的 16 位字面值符号扩展为 32 位之后赋给寄存器 vAA</td>
+</tr>
+<tr>
+<td>14</td>
+<td>31i</td>
+<td>const vAA, #+BBBB</td>
+<td>将给定的字面值赋给寄存器 vAA</td>
+</tr>
+<tr>
+<td>15</td>
+<td>21h</td>
+<td>const&#x2F;high16 vAA, #+BBBB0000</td>
+<td>将给定的字面值右零扩展为 32 位之后赋给寄存器 vAA,vAA+1</td>
+</tr>
+<tr>
+<td>16</td>
+<td>21s</td>
+<td>const-wide&#x2F;16 vAA, #+BBBB</td>
+<td>将给定的 16 位字面值符号扩展为 64 位之后赋给寄存器 vAA,vAA+1</td>
+</tr>
+<tr>
+<td>17</td>
+<td>31i</td>
+<td>const-wide&#x2F;32 vAA, #+BBBBBBBB</td>
+<td>将给定的 32 位字面值符号扩展为 64 位之后赋给寄存器 vAA,vAA+1</td>
+</tr>
+<tr>
+<td>18</td>
+<td>51l</td>
+<td>const-wide vAA, #+BBBBBBBBBBBBBBBB</td>
+<td>将给定的 64 位字面值赋给寄存器 vAA,vAA+1</td>
+</tr>
+<tr>
+<td>19</td>
+<td>21h</td>
+<td>const-wide&#x2F;high16 vAA, #+vBBBB000000000000</td>
+<td>将给定的 16 位字面值右零扩展为 64 位之后赋给寄存器对 vAA</td>
+</tr>
+<tr>
+<td>1a</td>
+<td>21c</td>
+<td>const-string vAA, string@BBBB</td>
+<td>将字符串索引 BBBB 指向的字符串引用赋给寄存器 vAA</td>
+</tr>
+<tr>
+<td>1b</td>
+<td>31c</td>
+<td>const-string&#x2F;jumbo vAA, string@BBBBBBBB</td>
+<td>将字符串索引 BBBBBBBB 指向的字符串引用赋给寄存器 vAA</td>
+</tr>
+<tr>
+<td>1c</td>
+<td>21c</td>
+<td>const-class vAA, type@BBBB</td>
+<td>将类型索引 BBBB 指向的类引用赋给寄存器 vAA</td>
+</tr>
+<tr>
+<td>1d</td>
+<td>11x</td>
+<td>monitor-enter vAA</td>
+<td>获取寄存器 vAA 中对象的监视锁</td>
+</tr>
+<tr>
+<td>1e</td>
+<td>11x</td>
+<td>monitor-exit vAA</td>
+<td>释放寄存器 vAA 中对象的监视锁</td>
+</tr>
+<tr>
+<td>1f</td>
+<td>21c</td>
+<td>check-cast vAA type@BBBB</td>
+<td>将寄存器 vAA 中的对象引用转化为 type@BBBB 指定的类型，若失败抛出 ClassCastException</td>
+</tr>
+<tr>
+<td>20</td>
+<td>22c</td>
+<td>instance-of vA, vB type@CCCC</td>
+<td>判断寄存器 vB 中的对象引用是否为类型 type@CCCC 的实例。如果是给寄存器 vA 赋值为 1，否则赋值为 0</td>
+</tr>
+<tr>
+<td>21</td>
+<td>12x</td>
+<td>array-length vA, vB</td>
+<td>获取寄存器 vB 中的数组的长度并赋给寄存器 vA</td>
+</tr>
+<tr>
+<td>22</td>
+<td>21c</td>
+<td>new-instance vAA, type@vBBBB</td>
+<td>构建指定类型 type@BBBB 的实例对象，并将对象引用赋给寄存器 vAA</td>
+</tr>
+<tr>
+<td>23</td>
+<td>22c</td>
+<td>new-array vA, vB, type@CCCC</td>
+<td>构建指定类型 type@CCCC 和指定大小 vB 的数组，并将数组引用赋给寄存器 vA</td>
+</tr>
+<tr>
+<td>24</td>
+<td>35c</td>
+<td>filled-new-array {vC,vD,vE,vF,vG} type@vBBBB</td>
+<td>构建指定类型 type@BBBB 和指定大小的数组，并使用提供的内容 vC-vG 填充数组。由于数组内容是给定的，所以无需再使用一个寄存器 vA 指定数组大小</td>
+</tr>
+<tr>
+<td>25</td>
+<td>3rc</td>
+<td>filled-new-array&#x2F;range {vCCCC..vNNNN} type@BBBB</td>
+<td>同上，区别是使用一定范围内的寄存器内容来填充数组，数组大小为 N-C+1</td>
+</tr>
+<tr>
+<td>26</td>
+<td>31t</td>
+<td>fill-array-data vAA, +BBBB</td>
+<td>使用给定数据 BBBB 填充寄存器 vAA 存储的数组，只能是基本类型数组。BBBB 有特定的格式</td>
+</tr>
+<tr>
+<td>27</td>
+<td>11x</td>
+<td>throw vAA</td>
+<td>抛出寄存器 vAA 指定的异常</td>
+</tr>
+<tr>
+<td>28</td>
+<td>10t</td>
+<td>goto +AA</td>
+<td>无条件跳转至指定偏移处，偏移量 AA 为 8 位</td>
+</tr>
+<tr>
+<td>29</td>
+<td>20t</td>
+<td>goto&#x2F;16 +AAAA</td>
+<td>无条件跳转至指定偏移处，偏移量 AAAA 为 16 位</td>
+</tr>
+<tr>
+<td>2a</td>
+<td>30t</td>
+<td>goto&#x2F;32 +AAAAAAAA</td>
+<td>无条件跳转至指定偏移处，偏移量 AAAAAAAA 为 32 位</td>
+</tr>
+<tr>
+<td>2b</td>
+<td>31t</td>
+<td>packed-switch vAA, +BBBBBBBB</td>
+<td>寄存器 vAA 存储的是是希望跳转的偏移量，BBBBBBBB 是一个偏移量表。基于偏移量表查找匹配项，如果存在则跳转，不存在跳转到下一指令</td>
+</tr>
+<tr>
+<td>2c</td>
+<td>31t</td>
+<td>sparse-switch vAA, +BBBBBBBB</td>
+<td></td>
+</tr>
+<tr>
+<td>2d</td>
+<td>23x</td>
+<td>cmpl-float vAA, vBB, vCC</td>
+<td>比较两个单精度浮点数。如果寄存器 vBB 的值大于寄存器 vCC 的值，结果为 -1；如果等于，结果为 0；如果小于，结果为 1。NaN 比较返回 -1。结果赋给寄存器 vAA</td>
+</tr>
+<tr>
+<td>2e</td>
+<td>23x</td>
+<td>cmpg-float vAA, vBB, vCC</td>
+<td>比较两个单精度浮点数。如果寄存器 vBB 的值大于寄存器 vCC 的值，结果为 1；如果等于，结果为 0；如果小于，结果为 -1。NaN 比较返回 1。结果赋给寄存器 vAA</td>
+</tr>
+<tr>
+<td>2f</td>
+<td>23x</td>
+<td>cmpl-double vAA, vBB, vCC</td>
+<td>比较两个双精度浮点数。如果寄存器 vBB 的值大于寄存器 vCC 的值，结果为 -1；如果等于，结果为 0；如果小于，结果为 1。NaN 比较返回 -1。结果赋给寄存器 vAA</td>
+</tr>
+<tr>
+<td>30</td>
+<td>23x</td>
+<td>cmpg-double vAA, vBB, vCC</td>
+<td>比较两个双精度浮点数。如果寄存器 vBB 的值大于寄存器 vCC 的值，结果为 1；如果等于，结果为 0；如果小于，结果为 -1。NaN 比较返回 1。结果赋给寄存器 vAA</td>
+</tr>
+<tr>
+<td>31</td>
+<td>23x</td>
+<td>cmp-long vAA, vBB, vCC</td>
+<td>比较两个长整型数。如果寄存器 vBB 的值大于寄存器 vCC 的值，结果为 1；如果等于，结果为 0；如果小于，结果为 -1。结果赋给寄存器 vAA</td>
+</tr>
+<tr>
+<td>32</td>
+<td>22t</td>
+<td>if-eq vA, vB, +CCCC</td>
+<td>如果寄存器 vA 的值等于 vB 的值，则跳转到指定偏移处，偏移量为 CCCC</td>
+</tr>
+<tr>
+<td>33</td>
+<td>22t</td>
+<td>if-ne vA, vB, +CCCC</td>
+<td>如果寄存器 vA 的值不等于 vB 的值，则跳转到指定偏移处，偏移量为 CCCC</td>
+</tr>
+<tr>
+<td>34</td>
+<td>22t</td>
+<td>if-lt vA, vB, +CCCC</td>
+<td>如果寄存器 vA 的值小于 vB 的值，则跳转到指定偏移处，偏移量为 CCCC</td>
+</tr>
+<tr>
+<td>35</td>
+<td>22t</td>
+<td>if-ge vA, vB, +CCCC</td>
+<td>如果寄存器 vA 的值大于等于 vB 的值，则跳转到指定偏移处，偏移量为 CCCC</td>
+</tr>
+<tr>
+<td>36</td>
+<td>22t</td>
+<td>if-gt vA, vB, +CCCC</td>
+<td>如果寄存器 vA 的值大于 vB 的值，则跳转到指定偏移处，偏移量为 CCCC</td>
+</tr>
+<tr>
+<td>37</td>
+<td>22t</td>
+<td>if-le vA, vB, +CCCC</td>
+<td>如果寄存器 vA 的值小于等于 vB 的值，则跳转到指定偏移处，偏移量为 CCCC</td>
+</tr>
+<tr>
+<td>38</td>
+<td>21t</td>
+<td>if-eqz vAA, +BBBB</td>
+<td>如果寄存器 vAA 的值等于 0，则跳转到指定偏移处，偏移量为 BBBB</td>
+</tr>
+<tr>
+<td>39</td>
+<td>21t</td>
+<td>if-nez vAA, +BBBB</td>
+<td>如果寄存器 vAA 的值不等于 0，则跳转到指定偏移处，偏移量为 BBBB</td>
+</tr>
+<tr>
+<td>3a</td>
+<td>21t</td>
+<td>if-ltz vAA, +BBBB</td>
+<td>如果寄存器 vAA 的值小于 0，则跳转到指定偏移处，偏移量为 BBBB</td>
+</tr>
+<tr>
+<td>3b</td>
+<td>21t</td>
+<td>if-gez vAA, +BBBB</td>
+<td>如果寄存器 vAA 的值大于等于 0，则跳转到指定偏移处，偏移量为 BBBB</td>
+</tr>
+<tr>
+<td>3c</td>
+<td>21t</td>
+<td>if-gtz vAA, +BBBB</td>
+<td>如果寄存器 vAA 的值大于 0，则跳转到指定偏移处，偏移量为 BBBB</td>
+</tr>
+<tr>
+<td>3d</td>
+<td>21t</td>
+<td>if-lez vAA, +BBBB</td>
+<td>如果寄存器 vAA 的值小于等于 0，则跳转到指定偏移处，偏移量为 BBBB</td>
+</tr>
+<tr>
+<td>3e</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>3f</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>40</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>41</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>42</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>43</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>44</td>
+<td>23x</td>
+<td>aget vAA, vBB, vCC</td>
+<td>获取寄存器 vBB 存储的数组指定索引处的元素并赋给寄存器 vAA。寄存器 vCC 的值为指定索引</td>
+</tr>
+<tr>
+<td>45</td>
+<td>23x</td>
+<td>aget-wide vAA, vBB, vCC</td>
+<td>获取寄存器 vBB 存储的数组指定索引处的元素(64 位)并赋给寄存器对 vAA。寄存器 vCC 的值为指定索引</td>
+</tr>
+<tr>
+<td>46</td>
+<td>23x</td>
+<td>aget-object vAA, vBB, vCC</td>
+<td>获取寄存器 vBB 存储的对象类型数组指定索引处的元素并赋给寄存器 vAA。寄存器 vCC 的值为指定索引</td>
+</tr>
+<tr>
+<td>47</td>
+<td>23x</td>
+<td>aget-boolean vAA, vBB, vCC</td>
+<td>获取寄存器 vBB 存储的布尔类型数组指定索引处的元素并赋给寄存器 vAA。寄存器 vCC 的值为指定索引</td>
+</tr>
+<tr>
+<td>48</td>
+<td>23x</td>
+<td>aget-byte vAA, vBB, vCC</td>
+<td>获取寄存器 vBB 存储的 byte 类型数组指定索引处的元素并赋给寄存器 vAA。寄存器 vCC 的值为指定索引</td>
+</tr>
+<tr>
+<td>49</td>
+<td>23x</td>
+<td>aget-char vAA, vBB, vCC</td>
+<td>获取寄存器 vBB 存储的 char 类型数组指定索引处的元素并赋给寄存器 vAA。寄存器 vCC 的值为指定索引</td>
+</tr>
+<tr>
+<td>4a</td>
+<td>23x</td>
+<td>aget-short vAA, vBB, vCC</td>
+<td>获取寄存器 vBB 存储的 short 类型数组指定索引处的元素并赋给寄存器 vAA。寄存器 vCC 的值为指定索引</td>
+</tr>
+<tr>
+<td>4b</td>
+<td>23x</td>
+<td>aput vAA, vBB, vCC</td>
+<td>将寄存器 vAA 的值赋给寄存器 vBB 存储的数组的指定索引处。寄存器 vCC 存储的值为指定索引</td>
+</tr>
+<tr>
+<td>4c</td>
+<td>23x</td>
+<td>aput-wide vAA, vBB, vCC</td>
+<td>将寄存器对 vAA 的值(64 位)赋给寄存器 vBB 存储的数组的指定索引处。寄存器 vCC 存储的值为指定索引</td>
+</tr>
+<tr>
+<td>4d</td>
+<td>23x</td>
+<td>aput-object vAA, vBB, vCC</td>
+<td>将寄存器 vAA 存储的对象赋给寄存器 vBB 存储的数组的指定索引处。寄存器 vCC 存储的值为指定索引</td>
+</tr>
+<tr>
+<td>4e</td>
+<td>23x</td>
+<td>aput-boolean vAA, vBB, vCC</td>
+<td>将寄存器 vAA 存储的布尔值赋给寄存器 vBB 存储的数组的指定索引处。寄存器 vCC 存储的值为指定索引</td>
+</tr>
+<tr>
+<td>4f</td>
+<td>23x</td>
+<td>aput-byte vAA, vBB, vCC</td>
+<td>将寄存器 vAA 存储的 byte 值赋给寄存器 vBB 存储的数组的指定索引处。寄存器 vCC 存储的值为指定索引</td>
+</tr>
+<tr>
+<td>50</td>
+<td>23x</td>
+<td>aput-char vAA, vBB, vCC</td>
+<td>将寄存器 vAA 存储的 char 值赋给寄存器 vBB 存储的数组的指定索引处。寄存器 vCC 存储的值为指定索引</td>
+</tr>
+<tr>
+<td>51</td>
+<td>23x</td>
+<td>aput-short vAA, vBB, vCC</td>
+<td>将寄存器 vAA 存储的 short 值赋给寄存器 vBB 存储的数组的指定索引处。寄存器 vCC 存储的值为指定索引</td>
+</tr>
+<tr>
+<td>52</td>
+<td>22c</td>
+<td>iget vA, vB, field@CCCC</td>
+<td>获取寄存器 vB 存储的实例的字段，并存入寄存器 vA。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>53</td>
+<td>22c</td>
+<td>iget-wide vA, vB, field@CCCC</td>
+<td>获取寄存器 vB 存储的实例的字段，并存入寄存器对 vA。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>54</td>
+<td>22c</td>
+<td>iget-object  vA, vB, field@CCCC</td>
+<td>获取寄存器 vB 存储的实例的对象类型字段，并存入寄存器 vA。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>55</td>
+<td>22c</td>
+<td>iget-boolean vA, vB, field@CCCC</td>
+<td>获取寄存器 vB 存储的实例的 boolean 类型字段，并存入寄存器 vA。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>56</td>
+<td>22c</td>
+<td>iget-byte vA, vB, field@CCCC</td>
+<td>获取寄存器 vB 存储的实例的 byte 类型字段，并存入寄存器 vA。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>57</td>
+<td>22c</td>
+<td>iget-char vA, vB, field@CCCC</td>
+<td>获取寄存器 vB 存储的实例的 char 类型字段，并存入寄存器 vA。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>58</td>
+<td>22c</td>
+<td>iget-short vA, vB, field@CCCC</td>
+<td>获取寄存器 vB 存储的实例的 short 类型字段，并存入寄存器 vA。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>59</td>
+<td>22c</td>
+<td>iput vA, vB, field@CCCC</td>
+<td>将寄存器 vA 存储的值赋给寄存器 vB 存储的实例的字段。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>5a</td>
+<td>22c</td>
+<td>iput-wide vA, vB, field@CCCC</td>
+<td>将寄存器对 vA 存储的值(64位)赋给寄存器 vB 存储的实例的字段。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>5b</td>
+<td>22c</td>
+<td>iput-object vA, vB, field@CCCC</td>
+<td>将寄存器 vA 存储的对象类型值赋给寄存器 vB 存储的实例的字段。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>5c</td>
+<td>22c</td>
+<td>iput-boolean vA, vB, field@CCCC</td>
+<td>将寄存器 vA 存储的 boolean 类型值赋给寄存器 vB 存储的实例的字段。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>5d</td>
+<td>22c</td>
+<td>iput-byte vA, vB, field@CCCC</td>
+<td>将寄存器 vA 存储的 byte 类型值赋给寄存器 vB 存储的实例的字段。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>5e</td>
+<td>22c</td>
+<td>iput-char vA, vB, field@CCCC</td>
+<td>将寄存器 vA 存储的 char 类型值赋给寄存器 vB 存储的实例的字段。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>5f</td>
+<td>22c</td>
+<td>iput-short vA, vB, field@CCCC</td>
+<td>将寄存器 vA 存储的 short 类型值赋给寄存器 vB 存储的实例的字段。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>60</td>
+<td>21c</td>
+<td>sget vA, vB, field@CCCC</td>
+<td>获取寄存器 vB 存储的实例的静态字段，并存入寄存器 vA。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>61</td>
+<td>21c</td>
+<td>sget-wide vA, vB, field@CCCC</td>
+<td>获取寄存器 vB 存储的实例的静态字段，并存入寄存器对 vA。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>62</td>
+<td>21c</td>
+<td>sget-object  vA, vB, field@CCCC</td>
+<td>获取寄存器 vB 存储的实例的对象类型静态字段，并存入寄存器 vA。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>63</td>
+<td>21c</td>
+<td>sget-boolean vA, vB, field@CCCC</td>
+<td>获取寄存器 vB 存储的实例的 boolean 类型静态字段，并存入寄存器 vA。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>64</td>
+<td>21c</td>
+<td>sget-byte vA, vB, field@CCCC</td>
+<td>获取寄存器 vB 存储的实例的 byte 类型静态字段，并存入寄存器 vA。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>65</td>
+<td>21c</td>
+<td>sget-char vA, vB, field@CCCC</td>
+<td>获取寄存器 vB 存储的实例的 char 类型静态字段，并存入寄存器 vA。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>66</td>
+<td>21c</td>
+<td>sget-short vA, vB, field@CCCC</td>
+<td>获取寄存器 vB 存储的实例的 short 类型静态字段，并存入寄存器 vA。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>67</td>
+<td>21c</td>
+<td>sput vA, vB, field@CCCC</td>
+<td>将寄存器 vA 存储的值赋给寄存器 vB 存储的实例的静态字段。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>68</td>
+<td>21c</td>
+<td>sput-wide vA, vB, field@CCCC</td>
+<td>将寄存器对 vA 存储的值(64位)赋给寄存器 vB 存储的实例的静态字段。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>69</td>
+<td>21c</td>
+<td>sput-object vA, vB, field@CCCC</td>
+<td>将寄存器 vA 存储的对象类型值赋给寄存器 vB 存储的实例的静态字段。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>6a</td>
+<td>21c</td>
+<td>sput-boolean vA, vB, field@CCCC</td>
+<td>将寄存器 vA 存储的 boolean 类型值赋给寄存器 vB 存储的实例的静态字段。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>6b</td>
+<td>21c</td>
+<td>sput-byte vA, vB, field@CCCC</td>
+<td>将寄存器 vA 存储的 byte 类型值赋给寄存器 vB 存储的实例的静态字段。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>6c</td>
+<td>21c</td>
+<td>sput-char vA, vB, field@CCCC</td>
+<td>将寄存器 vA 存储的 char 类型值赋给寄存器 vB 存储的实例的静态字段。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>6d</td>
+<td>21c</td>
+<td>sput-short vA, vB, field@CCCC</td>
+<td>将寄存器 vA 存储的 short 类型值赋给寄存器 vB 存储的实例的静态字段。字段类型是 CCCC</td>
+</tr>
+<tr>
+<td>6e</td>
+<td>35c</td>
+<td>invoke-virtual {vC,vD,vE,vF,vG} meth@BBBB</td>
+<td>调用实例的虚方法，C~G 是参数寄存器</td>
+</tr>
+<tr>
+<td>6f</td>
+<td>35c</td>
+<td>invoke-super {vC,vD,vE,vF,vG} meth@BBBB</td>
+<td>调用实例的父类方法，C~G 是参数寄存器</td>
+</tr>
+<tr>
+<td>70</td>
+<td>35c</td>
+<td>invoke-direct {vC,vD,vE,vF,vG} meth@BBBB</td>
+<td>调用实例的 private 方法或者构造函数，C~G 是参数寄存器</td>
+</tr>
+<tr>
+<td>71</td>
+<td>35c</td>
+<td>invoke-static {vC,vD,vE,vF,vG} meth@BBBB</td>
+<td>调用实例的 static 方法，C~G 是参数寄存器</td>
+</tr>
+<tr>
+<td>72</td>
+<td>35c</td>
+<td>invoke-interface {vC,vD,vE,vF,vG} meth@BBBB</td>
+<td>调用实例的接口方法，C~G 是参数寄存器</td>
+</tr>
+<tr>
+<td>73</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>74</td>
+<td>3rc</td>
+<td>invoke-virtual&#x2F;range {vCCCC..vNNNN} meth@BBBB</td>
+<td>同上。只是参数寄存器表示方式不一样。这里直接使用 vCCCC 到 vNNNN 之间的寄存器，而不是单独指定每个寄存器</td>
+</tr>
+<tr>
+<td>75</td>
+<td>3rc</td>
+<td>invoke-super&#x2F;range {vCCCC..vNNNN} meth@BBBB</td>
+<td></td>
+</tr>
+<tr>
+<td>76</td>
+<td>3rc</td>
+<td>invoke-direct&#x2F;range {vCCCC..vNNNN} meth@BBBB</td>
+<td></td>
+</tr>
+<tr>
+<td>77</td>
+<td>3rc</td>
+<td>invoke-static&#x2F;range {vCCCC..vNNNN} meth@BBBB</td>
+<td></td>
+</tr>
+<tr>
+<td>78</td>
+<td>3rc</td>
+<td>invoke-interface&#x2F;range {vCCCC..vNNNN} meth@BBBB</td>
+<td></td>
+</tr>
+<tr>
+<td>79</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>7a</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>7b</td>
+<td>12x</td>
+<td>neg-int vA, vB</td>
+<td>对寄存器 vB 存储的整型数求补并存入寄存器 vA</td>
+</tr>
+<tr>
+<td>7c</td>
+<td>12x</td>
+<td>not-int vA, vB</td>
+<td>对寄存器 vB 存储的整型数求反并存入寄存器 vA</td>
+</tr>
+<tr>
+<td>7d</td>
+<td>12x</td>
+<td>neg-long vA, vB</td>
+<td>对寄存器对 vB 存储的长整型数求补并存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>7e</td>
+<td>12x</td>
+<td>not-long vA, vB</td>
+<td>对寄存器对 vB 存储的长整型数求反并存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>7f</td>
+<td>12x</td>
+<td>neg-float vA, vB</td>
+<td>对寄存器 vB 存储的单精度浮点数求补并存入寄存器 vA</td>
+</tr>
+<tr>
+<td>80</td>
+<td>12x</td>
+<td>neg-double vA, vB</td>
+<td>对寄存器对 vB 存储的双精度浮点数求补并存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>81</td>
+<td>12x</td>
+<td>int-to-long vA, vB</td>
+<td>将寄存器 vB 中的整型数转换为长整型数，并存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>82</td>
+<td>12x</td>
+<td>int-to-float vA, vB</td>
+<td>将寄存器 vB 中的整型数转换为单精度浮点数，并存入寄存器 vA</td>
+</tr>
+<tr>
+<td>83</td>
+<td>12x</td>
+<td>int-to-double vA, vB</td>
+<td>将寄存器 vB 中的整型数转换为双精度浮点数，并存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>84</td>
+<td>12x</td>
+<td>long-to-int vA, vB</td>
+<td>将寄存器对 vB 中的长整型数转换为整型数，并存入寄存器 vA</td>
+</tr>
+<tr>
+<td>85</td>
+<td>12x</td>
+<td>long-to-float vA, vB</td>
+<td>将寄存器对 vB 中的长整型数转换为单精度浮点数，并存入寄存器 vA</td>
+</tr>
+<tr>
+<td>86</td>
+<td>12x</td>
+<td>long-to-double vA, vB</td>
+<td>将寄存器对 vB 中的长整型数转换为双精度浮点数，并存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>87</td>
+<td>12x</td>
+<td>float-to-int vA, vB</td>
+<td>将寄存器 vB 中的单精度浮点数转换为整型数，并存入寄存器 vA</td>
+</tr>
+<tr>
+<td>88</td>
+<td>12x</td>
+<td>float-to-long vA, vB</td>
+<td>将寄存器 vB 中的单精度浮点数转换为长整型数，并存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>89</td>
+<td>12x</td>
+<td>float-to-double vA, vB</td>
+<td>将寄存器 vB 中的单精度浮点数转换为双精度浮点数，并存入寄存器 vA</td>
+</tr>
+<tr>
+<td>8a</td>
+<td>12x</td>
+<td>double-to-int vA, vB</td>
+<td>将寄存器对 vB 中的双精度浮点数转换为整型数，并存入寄存器 vA</td>
+</tr>
+<tr>
+<td>8b</td>
+<td>12x</td>
+<td>double-to-long vA, vB</td>
+<td>将寄存器对 vB 中的双精度浮点数转换为长整型数，并存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>8c</td>
+<td>12x</td>
+<td>double-to-float vA, vB</td>
+<td>将寄存器对 vB 中的双精度浮点数转换为单精度浮点数，并存入寄存器 vA</td>
+</tr>
+<tr>
+<td>8d</td>
+<td>12x</td>
+<td>int-to-byte vA, vB</td>
+<td>将寄存器对 vB 中的整型数转换为 byte，并存入寄存器 vA</td>
+</tr>
+<tr>
+<td>8e</td>
+<td>12x</td>
+<td>int-to-char vA, vB</td>
+<td>将寄存器对 vB 中的整型数转换为 char，并存入寄存器 vA</td>
+</tr>
+<tr>
+<td>8f</td>
+<td>12x</td>
+<td>int-to-short vA, vB</td>
+<td>将寄存器对 vB 中的整型数转换为 short，并存入寄存器 vA</td>
+</tr>
+<tr>
+<td>90</td>
+<td>23x</td>
+<td>add-int vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的整型数加上寄存器 vCC 中的整型数，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>91</td>
+<td>23x</td>
+<td>sub-int vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的整型数减去寄存器 vCC 中的整型数，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>92</td>
+<td>23x</td>
+<td>mul-int vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的整型数乘以寄存器 vCC 中的整型数，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>93</td>
+<td>23x</td>
+<td>div-int vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的整型数除以寄存器 vCC 中的整型数，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>94</td>
+<td>23x</td>
+<td>rem-int vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的整型数和寄存器 vCC 中的整型数进行模运算，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>95</td>
+<td>23x</td>
+<td>and-int vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的整型数和寄存器 vCC 中的整型数进行与运算，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>96</td>
+<td>23x</td>
+<td>or-int vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的整型数和寄存器 vCC 中的整型数进行或运算，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>97</td>
+<td>23x</td>
+<td>xor-int vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的整型数和寄存器 vCC 中的整型数进行异或运算，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>98</td>
+<td>23x</td>
+<td>shl-int vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的有符号数左移 vCC 位，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>99</td>
+<td>23x</td>
+<td>shr-int vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的有符号数右移 vCC 位，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>9a</td>
+<td>23x</td>
+<td>ushr-int vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的无符号数右移 vCC 位，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>9b</td>
+<td>23x</td>
+<td>add-long vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的长整型数加上寄存器对 vCC 中的长整型数，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>9c</td>
+<td>23x</td>
+<td>sub-long vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的长整型数减去寄存器对 vCC 中的长整型数，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>9d</td>
+<td>23x</td>
+<td>mul-long vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的长整型数乘以寄存器对 vCC 中的长整型数，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>9e</td>
+<td>23x</td>
+<td>div-long vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的长整型数除以寄存器对 vCC 中的长整型数，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>9f</td>
+<td>23x</td>
+<td>rem-long vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的长整型数和寄存器对 vCC 中的长整型数进行模运算，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>a0</td>
+<td>23x</td>
+<td>and-long vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的长整型数和寄存器对 vCC 中的长整型数进行与运算，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>a1</td>
+<td>23x</td>
+<td>or-long vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的长整型数和寄存器对 vCC 中的长整型数进行或运算，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>a2</td>
+<td>23x</td>
+<td>xor-long vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的长整型数和寄存器对 vCC 中的长整型数进行异或运算，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>a3</td>
+<td>23x</td>
+<td>shl-long vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的有符号长整型数左移 vCC 位，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>a4</td>
+<td>23x</td>
+<td>shr-long vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的有符号长整型数右移 vCC 位，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>a5</td>
+<td>23x</td>
+<td>ushr-long vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的无符号长整型数右移 vCC 位，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>a6</td>
+<td>23x</td>
+<td>add-float vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的单精度浮点数加上寄存器 vCC 中的单精度浮点数，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>a7</td>
+<td>23x</td>
+<td>sub-float vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的单精度浮点数减去寄存器 vCC 中的单精度浮点数，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>a8</td>
+<td>23x</td>
+<td>mul-float vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的单精度浮点数乘以寄存器 vCC 中的单精度浮点数，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>a9</td>
+<td>23x</td>
+<td>div-float vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的单精度浮点数除以寄存器 vCC 中的单精度浮点数，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>aa</td>
+<td>23x</td>
+<td>rem-float vAA, vBB, vCC</td>
+<td>将寄存器 vBB 中的单精度浮点数和寄存器 vCC 中的单精度浮点数进行模运算，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>ab</td>
+<td>23x</td>
+<td>add-double vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的双精度浮点数加上寄存器对 vCC 中的双精度浮点数，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>ac</td>
+<td>23x</td>
+<td>sub-double vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的双精度浮点数减去寄存器对 vCC 中的双精度浮点数，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>ad</td>
+<td>23x</td>
+<td>mul-double vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的双精度浮点数乘以寄存器对 vCC 中的双精度浮点数，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>ae</td>
+<td>23x</td>
+<td>div-double vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的双精度浮点数除以寄存器对 vCC 中的双精度浮点数，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>af</td>
+<td>23x</td>
+<td>rem-double vAA, vBB, vCC</td>
+<td>将寄存器对 vBB 中的双精度浮点数和寄存器对 vCC 中的双精度浮点数进行模运算，结果存入寄存器对 vAA</td>
+</tr>
+<tr>
+<td>b0</td>
+<td>12x</td>
+<td>add-int&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的整型数加上寄存器 vB 中的整型数，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>b1</td>
+<td>12x</td>
+<td>sub-int&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的整型数减去寄存器 vB 中的整型数，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>b2</td>
+<td>12x</td>
+<td>mul-int&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的整型数乘以寄存器 vB 中的整型数，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>b3</td>
+<td>12x</td>
+<td>div-int&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的整型数除以寄存器 vB 中的整型数，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>b4</td>
+<td>12x</td>
+<td>rem-int&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的整型数和寄存器 vB 中的整型数进行模运算，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>b5</td>
+<td>12x</td>
+<td>and-int&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的整型数和寄存器 vB 中的整型数进行与运算，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>b6</td>
+<td>12x</td>
+<td>or-int&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的整型数和寄存器 vB 中的整型数进行或运算，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>b7</td>
+<td>12x</td>
+<td>xor-int&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的整型数和寄存器 vB 中的整型数进行异或运算，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>b8</td>
+<td>12x</td>
+<td>shl-int&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的有符号数左移 vB 位，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>b9</td>
+<td>12x</td>
+<td>shr-int&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的有符号数右移 vB 位，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>ba</td>
+<td>12x</td>
+<td>ushr-int&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的无符号数左移 vB 位，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>bb</td>
+<td>12x</td>
+<td>add-long&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的长整型数加上寄存器对 vB 中的长整型数，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>bc</td>
+<td>12x</td>
+<td>sub-long&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的长整型数减去寄存器对 vB 中的长整型数，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>bd</td>
+<td>12x</td>
+<td>mul-long&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的长整型数乘以寄存器对 vB 中的长整型数，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>be</td>
+<td>12x</td>
+<td>div-long&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的长整型数除以寄存器对 vB 中的长整型数，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>bf</td>
+<td>12x</td>
+<td>rem-long&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的长整型数和寄存器对 vB 中的长整型数进行模运算，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>c0</td>
+<td>12x</td>
+<td>and-long&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的长整型数和寄存器对 vB 中的长整型数进行与运算，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>c1</td>
+<td>12x</td>
+<td>or-long&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的长整型数和寄存器对 vB 中的长整型数进行或运算，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>c2</td>
+<td>12x</td>
+<td>xor-long&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的长整型数和寄存器对 vB 中的长整型数进异或运算，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>c3</td>
+<td>12x</td>
+<td>shl-long&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的有符号长整型数左移 vB 位，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>c4</td>
+<td>12x</td>
+<td>shr-long&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的有符号长整型数右移 vB 位，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>c5</td>
+<td>12x</td>
+<td>ushr-long&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的无符号长整型数左移 vB 位，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>c6</td>
+<td>12x</td>
+<td>add-float&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的单精度浮点数加上寄存器 vB 中的单精度浮点数，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>c7</td>
+<td>12x</td>
+<td>sub-float&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的单精度浮点数减去寄存器 vB 中的单精度浮点数，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>c8</td>
+<td>12x</td>
+<td>mul-float&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的单精度浮点数乘以寄存器 vB 中的单精度浮点数，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>c9</td>
+<td>12x</td>
+<td>div-float&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的单精度浮点数除以寄存器 vB 中的单精度浮点数，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>ca</td>
+<td>12x</td>
+<td>rem-float&#x2F;2addr vA, vB</td>
+<td>将寄存器 vA 中的单精度浮点数和寄存器 vB 中的单精度浮点数进行模运算，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>cb</td>
+<td>12x</td>
+<td>add-double&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的双精度浮点数加上寄存器对 vB 中的双精度浮点数，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>cc</td>
+<td>12x</td>
+<td>sub-double&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的双精度浮点数减去寄存器对 vB 中的双精度浮点数，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>cd</td>
+<td>12x</td>
+<td>mul-double&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的双精度浮点数乘以寄存器对 vB 中的双精度浮点数，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>ce</td>
+<td>12x</td>
+<td>div-double&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的双精度浮点数除以寄存器对 vB 中的双精度浮点数，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>cf</td>
+<td>12x</td>
+<td>rem-double&#x2F;2addr vA, vB</td>
+<td>将寄存器对 vA 中的双精度浮点数和寄存器对 vB 中的双精度浮点数进行模运算，结果存入寄存器对 vA</td>
+</tr>
+<tr>
+<td>d0</td>
+<td>22s</td>
+<td>add-int&#x2F;lit16 vA, vB, #+CCCC</td>
+<td>将寄存器 vB 中的整型数和 16 位字面量 CCCC 相加，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>d1</td>
+<td>22s</td>
+<td>rsub-int vA, vB, #+CCCC</td>
+<td>将寄存器 vB 中的整型数和 16 位字面量 CCCC 相减，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>d2</td>
+<td>22s</td>
+<td>mul-int&#x2F;lit16 vA, vB, #+CCCC</td>
+<td>将寄存器 vB 中的整型数和 16 位字面量 CCCC 相乘，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>d3</td>
+<td>22s</td>
+<td>div-int&#x2F;lit16 vA, vB, #+CCCC</td>
+<td>将寄存器 vB 中的整型数和 16 位字面量 CCCC 相除，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>d4</td>
+<td>22s</td>
+<td>rem-int&#x2F;lit16 vA, vB, #+CCCC</td>
+<td>将寄存器 vB 中的整型数和 16 位字面量 CCCC 进行模运算，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>d5</td>
+<td>22s</td>
+<td>and-int&#x2F;lit16 vA, vB, #+CCCC</td>
+<td>将寄存器 vB 中的整型数和 16 位字面量 CCCC 进行与运算，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>d6</td>
+<td>22s</td>
+<td>or-int&#x2F;lit16 vA, vB, #+CCCC</td>
+<td>将寄存器 vB 中的整型数和 16 位字面量 CCCC 进行或运算，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>d7</td>
+<td>22s</td>
+<td>xor-int&#x2F;lit16 vA, vB, #+CCCC</td>
+<td>将寄存器 vB 中的整型数和 16 位字面量 CCCC 进行异或运算，结果存入寄存器 vA</td>
+</tr>
+<tr>
+<td>d8</td>
+<td>22b</td>
+<td>add-int&#x2F;lit8 vAA, vBB, #+CC</td>
+<td>将寄存器 vBB 中的整型数和 8 位字面量 CC 相加，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>d9</td>
+<td>22b</td>
+<td>rsub-int&#x2F;lit8 vAA, vBB, #+CC</td>
+<td>将寄存器 vBB 中的整型数和 8 位字面量 CC 相减，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>da</td>
+<td>22b</td>
+<td>mul-int&#x2F;lit8 vAA, vBB, #+CC</td>
+<td>将寄存器 vBB 中的整型数和 8 位字面量 CC 相乘，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>db</td>
+<td>22b</td>
+<td>div-int&#x2F;lit8 vAA, vBB, #+CC</td>
+<td>将寄存器 vBB 中的整型数和 8 位字面量 CC 相除，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>dc</td>
+<td>22b</td>
+<td>rem-int&#x2F;lit8 vAA, vBB, #+CC</td>
+<td>将寄存器 vBB 中的整型数和 8 位字面量 CC 进行模运算，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>dd</td>
+<td>22b</td>
+<td>and-int&#x2F;lit8 vAA, vBB, #+CC</td>
+<td>将寄存器 vBB 中的整型数和 8 位字面量 CC 进行与运算，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>de</td>
+<td>22b</td>
+<td>or-int&#x2F;lit8 vAA, vBB, #+CC</td>
+<td>将寄存器 vBB 中的整型数和 8 位字面量 CC 进行或运算，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>df</td>
+<td>22b</td>
+<td>xor-int&#x2F;lit8 vAA, vBB, #+CC</td>
+<td>将寄存器 vBB 中的整型数和 8 位字面量 CC 进行异或运算，结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>e0</td>
+<td>22b</td>
+<td>shl-int&#x2F;lit8 vAA, vBB, #+CC</td>
+<td>将寄存器 vBB 中的有符号数左移 CC 位，将结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>e1</td>
+<td>22b</td>
+<td>shr-int&#x2F;lit8 vAA, vBB, #+CC</td>
+<td>将寄存器 vBB 中的有符号数右移 CC 位，将结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>e2</td>
+<td>22b</td>
+<td>ushr-int&#x2F;lit8 vAA, vBB, #+CC</td>
+<td>将寄存器 vBB 中的无符号数右移 CC 位，将结果存入寄存器 vAA</td>
+</tr>
+<tr>
+<td>e3</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>e4</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>e5</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>e6</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>e7</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>e8</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>e9</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>ea</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>eb</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>ec</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>ed</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>ee</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>ef</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>f0</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>f1</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>f2</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>f3</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>f4</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>f5</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>f6</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>f7</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>f8</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>f9</td>
+<td>10x</td>
+<td>unused</td>
+<td></td>
+</tr>
+<tr>
+<td>fa</td>
+<td>45cc</td>
+<td>invoke-polymorphic {vC, vD, vE, vF, vG}, meth@BBBB, proto@HHHH</td>
+<td>调用指定的签名多态方法,存在于 038 和更高版本的 Dex 文件中</td>
+</tr>
+<tr>
+<td>fb</td>
+<td>4rcc</td>
+<td>invoke-polymorphic&#x2F;range {vCCCC .. vNNNN}, meth@BBBB, proto@HHHH</td>
+<td>调用指定的方法句柄,存在于版本 038 及更高版本的 Dex 文件中</td>
+</tr>
+<tr>
+<td>fc</td>
+<td>35c</td>
+<td>invoke-custom {vC, vD, vE, vF, vG}, call_site@BBBB</td>
+<td>解析并调用指定的调用点,存在于版本 038 及更高版本的 Dex 文件中</td>
+</tr>
+<tr>
+<td>fd</td>
+<td>3rc</td>
+<td>invoke-custom&#x2F;range {vCCCC .. vNNNN}, call_site@BBBB</td>
+<td>解析并调用一个调用点,存在于版本 038 及更高版本的 Dex 文件中</td>
+</tr>
+<tr>
+<td>fe</td>
+<td>21c</td>
+<td>const-method-handle vAA, method_handle@BBBB</td>
+<td>将通过特定索引指定的方法句柄的引用移到指定的寄存器中,存在于版本 039 及更高版本的 Dex 文件中</td>
+</tr>
+<tr>
+<td>ff</td>
+<td>21c</td>
+<td>const-method-type vAA, proto@BBBB</td>
+<td>将通过特定索引指定的方法原型的引用移到指定的寄存器中。存在于版本 039 及更高版本的 Dex 文件中</td>
+</tr>
+</tbody></table>
+</details>
+
+<h3 id="Dalvik指令练习"><a href="#Dalvik指令练习" class="headerlink" title="Dalvik指令练习"></a>Dalvik指令练习</h3><h4 id="编写HelloWorld-smali文件"><a href="#编写HelloWorld-smali文件" class="headerlink" title="编写HelloWorld.smali文件"></a>编写HelloWorld.smali文件</h4><div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 定义类名</span></span><br><span class="line">.class public LHelloword;</span><br><span class="line"><span class="comment"># 定义父类</span></span><br><span class="line">.super Ljava/lang/object;</span><br><span class="line"><span class="comment"># 声明静态main方法</span></span><br><span class="line">.method public static main([Ljava/lang/String;)V</span><br><span class="line">	<span class="comment"># 程序使用v0,v1,v2和一个参数寄存器共四个</span></span><br><span class="line">	.registers 4</span><br><span class="line">	<span class="comment"># 代码起始指令</span></span><br><span class="line">	.prologue</span><br><span class="line">	<span class="comment"># 空指令</span></span><br><span class="line">	nop</span><br><span class="line">	nop</span><br><span class="line">	nop</span><br><span class="line">	nop</span><br><span class="line">	<span class="comment"># 数据定义指令</span></span><br><span class="line">	const/16 v0, 0x8</span><br><span class="line">	const/4 v1, 0x5</span><br><span class="line">	const/v v2, 0x3</span><br><span class="line">	<span class="comment"># 数据操作指令</span></span><br><span class="line">	move v1, v2</span><br><span class="line">	<span class="comment"># 数据操作指令</span></span><br><span class="line">	new-array v0, v0, [I</span><br><span class="line">	array-length v1, v0</span><br><span class="line">	<span class="comment"># 实例操作指令</span></span><br><span class="line">	new-instance v1, Ljava/lang/StringBuilder;</span><br><span class="line">	<span class="comment"># 方法调用指令</span></span><br><span class="line">	invoke-direct &#123;v1&#125;, Ljava/lang/StringBuilder;-&gt;&lt;init&gt;()V</span><br><span class="line">	<span class="comment"># 跳转指令</span></span><br><span class="line">	if-nez v0, :cond_0</span><br><span class="line">	goto :goto_0</span><br><span class="line">	:cond_0</span><br><span class="line">	<span class="comment"># 数据转换指令</span></span><br><span class="line">	int-to-float v2, v2</span><br><span class="line">	<span class="comment"># 数据运算指令</span></span><br><span class="line">	add-float v2, v2, v2</span><br><span class="line">	<span class="comment"># 比较指令</span></span><br><span class="line">	cmpl-float v0, v2, v2</span><br><span class="line">	<span class="comment"># 字段操作指令</span></span><br><span class="line">	sget-object v0, Ljava/lang/System;-&gt;out:Ljava/io/PrintStream;</span><br><span class="line">	<span class="comment"># 构造字符串</span></span><br><span class="line">	const-string v1, <span class="string">&quot;Hello World&quot;</span></span><br><span class="line">	<span class="comment"># 方法调用</span></span><br><span class="line">	invoke-virtual &#123;v0, v1&#125;, Ljava/io/PrintStream;-&gt;println(Ljava/lang/String;)V</span><br><span class="line">	<span class="comment"># 返回指令</span></span><br><span class="line">	:goto_0</span><br><span class="line">	</span><br><span class="line">	return-void</span><br><span class="line">.end method</span><br></pre></td></tr></table></figure></div>
+
+<h4 id="编译smali文件"><a href="#编译smali文件" class="headerlink" title="编译smali文件"></a>编译smali文件</h4><p>使用smali工具来编译smail文件，可以到这里在线下载<a target="_blank" rel="noopener" href="https://bitbucket.org/JesusFreke/smali/downloads/">smali</a>，同时我也下到了本地，<a href="smali-2.1.1.jar">点击下载</a><br>执行如下命令编译smali文件</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar smali-2.1.1.jar -o HelloWorld.dex HelloWorld.smali</span><br></pre></td></tr></table></figure></div>
+<br>
+在当前文件夹下生成[HellowWorld.dex](HelloWorld.dex)文件
+**注意：**smali-2.1.1.jar后面的版本执行会出现如下错误：
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Exception <span class="keyword">in</span> thread <span class="string">&quot;main&quot;</span> com.beust.jcommander.MissingCommandException: Expected a <span class="built_in">command</span>, got -o</span><br><span class="line">        at com.beust.jcommander.JCommander.parseValues(JCommander.java:725)</span><br><span class="line">        at com.beust.jcommander.JCommander.parse(JCommander.java:304)</span><br><span class="line">        at com.beust.jcommander.JCommander.parse(JCommander.java:287)</span><br><span class="line">        at org.jf.smali.Main.main(Main.java:88) </span><br></pre></td></tr></table></figure></div>
+<br>
+换smali-2.1.1.jar就可以成功生成dex,新的smail编译使用方法有知道的可以留意告知。
+
+<h4 id="测试运行DEX文件"><a href="#测试运行DEX文件" class="headerlink" title="测试运行DEX文件"></a>测试运行DEX文件</h4><p>在Android设备下执行如下命令运行DEX文件</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb push HelloWorld.dex /sdcard/</span><br><span class="line">adb shell dalvikvm -<span class="built_in">cp</span> /sdcard/HelloWorld.dex HelloWorld</span><br></pre></td></tr></table></figure></div>
+<br>
+执行上面命令后如果成功，最后会打印"HelloWorld"。
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>Lyman
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://lymanye.github.io/2022/10/18/dalvik-format-and-bytecode/" title="Dalvik 格式与字节码规范">https://lymanye.github.io/2022/10/18/dalvik-format-and-bytecode/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Android%E9%80%86%E5%90%91/" rel="tag"># Android逆向</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/10/16/analysis-of-android-program-decompile-and-resignature/" rel="prev" title="Android程序分析&反编译重签名">
+                  <i class="fa fa-chevron-left"></i> Android程序分析&反编译重签名
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/10/21/view_android_source_code/" rel="next" title="Android源码查看">
+                  Android源码查看 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Lyman</span>
+  <span class="post-meta-divider">|</span>
+  <span id="busuanzi_container_site_pv">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    访问量：<span id="busuanzi_value_site_pv"></span> 次数
+  </span>
+
+  <span class="post-meta-divider">|</span>
+  <span id="busuanzi_container_site_uv">
+    访客数：<span id="busuanzi_value_site_uv"></span> 人次
+  </span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">51k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">47 分钟</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lozad.js/1.16.0/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pangu/4.0.7/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script><script src="/js/code-unfold.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"http://104.156.225.196:8360","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":true,"pageview":false,"placeholder":"请文明评论呀","avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"visitor":true,"comment_count":true,"requiredFields":[],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2022/10/18/dalvik-format-and-bytecode/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,59 @@
+//---------------------------------
+//--- 010 Editor v2.0.1 Script File
+//
+//      File: Oat2Dex.1sc
+//   Authors: feicong
+//    E-mail: 346345565@qq.com
+//       Url: https://github.com/feicong/android_re
+//   Version: 1.0
+//   Purpose: dump DEX file from Android ART OAT file.
+//  Category: Utility
+//   History:
+//   1.0   2017-03-14 feicong: Initial release.
+//------------------------------------------------
+
+LittleEndian();
+
+int i;
+char filename[512];
+filename = GetFileName();
+int filenum = GetFileNum();
+TFindResults r = FindAll("dex\n035");
+//Printf("%d\n", r.count);
+int pos, sz;
+char dexname[512];
+char ext[128];
+for(i=0; i < r.count; i++) {
+    pos = r.start[i];
+    sz = ReadInt(pos + 0x20);
+    Printf( "Found DEX at: 0x%lx, size: 0x%lx\n", pos, sz);
+
+    // Copy data to clipboard and write to a new file
+    SetSelection(pos, sz);
+    CopyToClipboard();
+    FileNew( "Hex" );
+    PasteFromClipboard();
+    SPrintf(ext, ".0x%lx.dex", pos);
+    Memset(dexname, 0, 512);
+    Strcat(dexname, filename);
+    Strcat(dexname, ext);
+    Printf("dexname: %s\n", dexname);
+    
+    // Save the new file to disk
+    if(FileSave(dexname) < 0)
+    {
+        Printf("An error occured writing file '%s' of size 0x%lx.\n", dexname, sz);
+        return -1;
+    }
+    FileClose();
+    FileSelect(filenum);
+    Printf("Write %s ok.\n", filename);
+    
+    // Make sure a big block of data is not still on the clipboard
+    SetSelection(0, 1);
+    CopyToClipboard();
+    SetSelection(0, 0);
+}
+
+
+Printf("Done.\n");

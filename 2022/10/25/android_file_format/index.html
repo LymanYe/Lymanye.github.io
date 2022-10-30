@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 6.3.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"lymanye.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.13.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"show_result":true,"style":"mac"},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":true,"pangu":true,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":true,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="本文记录Android中的一些文件格式  Dalvik虚拟机源码用到的分析Android源码版本：android-4.4w_r1Art 虚拟机源码用到的源码版本：android_10_0_0_r47  APKapk文件包是Android开发中的安装包文件 APK文件结构以app-debug.apk为参考解压apk文件查看基础结构如下：    classes.dex：可执行代码，如果开启MultiD">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android文件格式">
+<meta property="og:url" content="https://lymanye.github.io/2022/10/25/android_file_format/index.html">
+<meta property="og:site_name" content="Lyman">
+<meta property="og:description" content="本文记录Android中的一些文件格式  Dalvik虚拟机源码用到的分析Android源码版本：android-4.4w_r1Art 虚拟机源码用到的源码版本：android_10_0_0_r47  APKapk文件包是Android开发中的安装包文件 APK文件结构以app-debug.apk为参考解压apk文件查看基础结构如下：    classes.dex：可执行代码，如果开启MultiD">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-25_15-45-39.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-25_16-26-01.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-27_15-38-43.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-27_15-51-14.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-27_16-26-45.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-27_16-28-59.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_10-34-39.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_10-36-15.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_11-06-47.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_11-07-31.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_11-09-51.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_11-35-32.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_11-41-23.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_14-45-14.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_14-48-30.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_14-49-34.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_14-50-48.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_15-09-26.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_15-11-21.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_15-21-00.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_16-10-11.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_16-13-19.png">
+<meta property="og:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-29_16-17-53.png">
+<meta property="article:published_time" content="2022-10-24T23:18:29.000Z">
+<meta property="article:modified_time" content="2022-10-30T06:07:06.599Z">
+<meta property="article:author" content="Lyman">
+<meta property="article:tag" content="Android逆向">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://lymanye.github.io/2022/10/25/android_file_format/Snipaste_2022-10-25_15-45-39.png">
+
+
+<link rel="canonical" href="https://lymanye.github.io/2022/10/25/android_file_format/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://lymanye.github.io/2022/10/25/android_file_format/","path":"2022/10/25/android_file_format/","title":"Android文件格式"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Android文件格式 | Lyman</title>
+  
+
+
+
+
+
+<link rel="dns-prefetch" href="http://104.156.225.196:8360">
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Lyman</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">6</span></a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">9</span></a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">7</span></a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#APK"><span class="nav-number">1.</span> <span class="nav-text">APK</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#APK%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="nav-number">1.1.</span> <span class="nav-text">APK文件结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#APK%E7%9A%84%E7%94%9F%E6%88%90%E6%B5%81%E7%A8%8B"><span class="nav-number">1.2.</span> <span class="nav-text">APK的生成流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#APK%E7%9A%84%E5%AE%89%E8%A3%85%E8%BF%87%E7%A8%8B"><span class="nav-number">1.3.</span> <span class="nav-text">APK的安装过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E5%BC%80%E6%9C%BA%E6%97%B6%E5%AE%89%E8%A3%85"><span class="nav-number">1.3.1.</span> <span class="nav-text">系统开机时安装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Android%E5%B8%82%E5%9C%BA%E5%BA%94%E7%94%A8%E5%AE%89%E8%A3%85"><span class="nav-number">1.3.2.</span> <span class="nav-text">Android市场应用安装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%9A%E8%BF%87adb%E5%91%BD%E4%BB%A4%E5%AE%89%E8%A3%85"><span class="nav-number">1.3.3.</span> <span class="nav-text">通过adb命令安装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%9A%E8%BF%87SD%E5%8D%A1%E7%9A%84APK%E6%96%87%E4%BB%B6%E5%AE%89%E8%A3%85"><span class="nav-number">1.3.4.</span> <span class="nav-text">通过SD卡的APK文件安装</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#classes-dex"><span class="nav-number">2.</span> <span class="nav-text">classes.dex</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DEX%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="nav-number">2.1.</span> <span class="nav-text">DEX文件结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#DEX%E6%96%87%E4%BB%B6%E5%A4%B4"><span class="nav-number">2.1.1.</span> <span class="nav-text">DEX文件头</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#DEX%E6%96%87%E4%BB%B6%E5%A4%B4%E5%AE%9A%E4%B9%89"><span class="nav-number">2.1.1.1.</span> <span class="nav-text">DEX文件头定义</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#DEX%E6%96%87%E4%BB%B6%E5%A4%B4%E8%A7%A3%E6%9E%90"><span class="nav-number">2.1.1.2.</span> <span class="nav-text">DEX文件头解析</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DEX%E6%96%87%E4%BB%B6%E7%9A%84%E9%AA%8C%E8%AF%81%E4%B8%8E%E4%BC%98%E5%8C%96%E6%B5%81%E7%A8%8B"><span class="nav-number">2.2.</span> <span class="nav-text">DEX文件的验证与优化流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DEX%E6%96%87%E4%BB%B6%E4%BF%AE%E6%94%B9"><span class="nav-number">2.3.</span> <span class="nav-text">DEX文件修改</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MultiDex"><span class="nav-number">2.4.</span> <span class="nav-text">MultiDex</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AndroidManifest-xml"><span class="nav-number">3.</span> <span class="nav-text">AndroidManifest.xml</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AXML"><span class="nav-number">3.1.</span> <span class="nav-text">AXML</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#AXML%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.1.1.</span> <span class="nav-text">AXML文件格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AXML%E6%96%87%E4%BB%B6%E7%9A%84%E4%BF%AE%E6%94%B9"><span class="nav-number">3.1.2.</span> <span class="nav-text">AXML文件的修改</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#resources-arsc"><span class="nav-number">4.</span> <span class="nav-text">resources.arsc</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ARSC%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="nav-number">4.1.</span> <span class="nav-text">ARSC文件格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ARSC%E6%96%87%E4%BB%B6%E4%BF%AE%E6%94%B9"><span class="nav-number">4.2.</span> <span class="nav-text">ARSC文件修改</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#META-INF%E7%9B%AE%E5%BD%95"><span class="nav-number">5.</span> <span class="nav-text">META-INF目录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#CERT-RSA"><span class="nav-number">5.1.</span> <span class="nav-text">CERT.RSA</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MANIFEST-MF"><span class="nav-number">5.2.</span> <span class="nav-text">MANIFEST.MF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CERT-SF"><span class="nav-number">5.3.</span> <span class="nav-text">CERT.SF</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ODEX%E6%96%87%E4%BB%B6"><span class="nav-number">6.</span> <span class="nav-text">ODEX文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OAT"><span class="nav-number">7.</span> <span class="nav-text">OAT</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#oat%E7%94%9F%E6%88%90"><span class="nav-number">7.1.</span> <span class="nav-text">oat生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#oat%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="nav-number">7.2.</span> <span class="nav-text">oat文件格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#oat%E8%BD%AC%E6%8D%A2%E4%B8%BADex"><span class="nav-number">7.3.</span> <span class="nav-text">oat转换为Dex</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Lyman"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Lyman</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/LymanYe" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;LymanYe" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:lymanye@gmail.com" title="E-Mail → mailto:lymanye@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://lymanye.github.io/2022/10/25/android_file_format/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Lyman">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Lyman">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Android文件格式 | Lyman">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Android文件格式
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-10-25 07:18:29" itemprop="dateCreated datePublished" datetime="2022-10-25T07:18:29+08:00">2022-10-25</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-10-30 14:07:06" itemprop="dateModified" datetime="2022-10-30T14:07:06+08:00">2022-10-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Android/" itemprop="url" rel="index"><span itemprop="name">Android</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Android/%E9%80%86%E5%90%91/" itemprop="url" rel="index"><span itemprop="name">逆向</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Android/%E9%80%86%E5%90%91/%E3%80%8AAndroid%E8%BD%AF%E4%BB%B6%E5%AE%89%E5%85%A8%E6%9D%83%E5%A8%81%E6%8C%87%E5%8D%97%E3%80%8B%E5%AE%9E%E8%B7%B5%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">《Android软件安全权威指南》实践笔记</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/2022/10/25/android_file_format/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/2022/10/25/android_file_format/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>7.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>7 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>本文记录Android中的一些文件格式</p>
+<blockquote>
+<p>Dalvik虚拟机源码用到的分析Android源码版本：android-4.4w_r1<br>Art 虚拟机源码用到的源码版本：android_10_0_0_r47</p>
+</blockquote>
+<h2 id="APK"><a href="#APK" class="headerlink" title="APK"></a>APK</h2><p>apk文件包是Android开发中的安装包文件</p>
+<h3 id="APK文件结构"><a href="#APK文件结构" class="headerlink" title="APK文件结构"></a>APK文件结构</h3><p>以<a href="app-debug.apk">app-debug.apk</a>为参考解压apk文件查看基础结构如下：</p>
+<img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-25_15-45-39.png" class="">
+
+<ul>
+<li>classes.dex：可执行代码，如果开启MultiDex，会有多个dex文件</li>
+<li>res目录：使用到的资源文件</li>
+<li>resources.arsc：编译好的二进制资源文件</li>
+<li>AndroidManifest.xml：AXML二进制格式文件，清单配置文件</li>
+<li>assets目录：不会编译的资源文件目录</li>
+<li>META-INF：保存APK的签名信息</li>
+</ul>
+<h3 id="APK的生成流程"><a href="#APK的生成流程" class="headerlink" title="APK的生成流程"></a>APK的生成流程</h3><p>下图为AndroidStudio最新的APK生成流程图</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-25_16-26-01.png" class=""></div>
+总结起来如下：
+ 编译文件：
+  * Java/aidl文件转换为class文件：目录在/app/build/intermediates/javac/下面，主要使用到的命令为javac
+  * 资源文件：存在APP的res目录下的资源文件使用aapt工具，生成R.java，并且生成一个resource.arsc形成一个索引表，通过resource id访问
+* 生成Dex文件：使用dx工具将class文件转换为dex文件
+* 打包生成APK：通过apkbuilder工具将所有的文件打包到apk中
+* 签名对齐APK：对应于进行签名并进行对齐操作，主要用到zipalign工具。对齐是将APK包中的所有资源距离文件起始偏移4字节，这样通过内存映射访问apk文件速度会更快，减少运行时内存的使用。
+
+<h3 id="APK的安装过程"><a href="#APK的安装过程" class="headerlink" title="APK的安装过程"></a>APK的安装过程</h3><p>列举出如下四种APK安装方式</p>
+<h4 id="系统开机时安装"><a href="#系统开机时安装" class="headerlink" title="系统开机时安装"></a>系统开机时安装</h4><p>由PackageManagerService服务完成。这个服务在启动的时候会扫描&#x2F;system&#x2F;app下的apk重新安装</p>
+<h4 id="Android市场应用安装"><a href="#Android市场应用安装" class="headerlink" title="Android市场应用安装"></a>Android市场应用安装</h4><p>国外有Play商店，国内每个产商有自己的市场app。应用商店app如果在&#x2F;system&#x2F;app下，安装过程可以自动完成；否则会弹出软件安全相关的界面，引导安装</p>
+<h4 id="通过adb命令安装"><a href="#通过adb命令安装" class="headerlink" title="通过adb命令安装"></a>通过adb命令安装</h4><p>使用adb工具执行adb install xxx.apk 可以自动完成安装</p>
+<h4 id="通过SD卡的APK文件安装"><a href="#通过SD卡的APK文件安装" class="headerlink" title="通过SD卡的APK文件安装"></a>通过SD卡的APK文件安装</h4><p>把apk文件放到手机SD卡下，点击apk文件使用系统的packageinstaller.apk来进行安装。我使用的是android_10_0_0_r47,这个apk的源文件位于&#x2F;frameworks&#x2F;base&#x2F;&#x2F;packages&#x2F;PackageInstaller目录下。主界面为PackageInstallerActivity.java</p>
+<h2 id="classes-dex"><a href="#classes-dex" class="headerlink" title="classes.dex"></a>classes.dex</h2><p>classes.dex中包含APK的可执行代码</p>
+<h3 id="DEX文件结构"><a href="#DEX文件结构" class="headerlink" title="DEX文件结构"></a>DEX文件结构</h3><h4 id="DEX文件头"><a href="#DEX文件头" class="headerlink" title="DEX文件头"></a>DEX文件头</h4><h5 id="DEX文件头定义"><a href="#DEX文件头定义" class="headerlink" title="DEX文件头定义"></a>DEX文件头定义</h5><p>在Android源码art虚拟机对应DEX文件头android_10_0_0_r47的<a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/+/android-10.0.0_r47:art/libdexfile/dex/dex_file.h">art&#x2F;libdexfile&#x2F;dex&#x2F;dexfile.h</a>中，可以看到DEX文件的文件头定义。下面列出dexfile.h中定义DEX文件文件头的数据解释<font color=red>对应Dalvik虚拟机的<a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/+/android-4.4w_r1:dalvik/libdex/DexFile.h">libdex&#x2F;DexFile.h</a> </font>：</p>
+<p>这里注意一点：Andoid 4之前使用的是Dalvik虚拟机，所以上面的DexFile.h只能在Android4或以下的版本找到，Android4以上使用的art虚拟机，但是对于dex的一些固定格式是没有变化的，只是各自封装写法有一些差异。</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">// Raw header_item.</span><br><span class="line">  struct Header &#123;</span><br><span class="line">    uint8_t magic_[8] = &#123;&#125;;  				   // 包含了 dex 文件标识符以及版本，从 0x00 开始，长度为 8 个字节 </span><br><span class="line">    uint32_t checksum_ = 0;  				   // dex 文件校验码，偏移量为: 0x08，长度为 4 个字节</span><br><span class="line">    uint8_t signature_[kSha1DigestSize] = &#123;&#125;;  // dex sha-1 签名，偏移量为 0x0c, 长度为 20 个字节</span><br><span class="line">    uint32_t file_size_ = 0;  				   // dex 文件大小，偏移量为 0x20，长度为 4 个字节 </span><br><span class="line">    uint32_t header_size_ = 0;  			   // dex 文件头大小，偏移量为 0x24，长度为 4 个字节，一般为 0x70 </span><br><span class="line">    uint32_t endian_tag_ = 0;				   // dex 文件判断字节序是否交换，偏移量为 0x28，长度为 4 个字节，一般情况下为 0x78563412 </span><br><span class="line">    uint32_t link_size_ = 0;  				   // dex 文件链接段大小，为 0 则表示为静态链接，偏移量为 0x2c，长度为 4 个字节</span><br><span class="line">    uint32_t link_off_ = 0;  				   // dex 文件链接段偏移位置，偏移量为 0x30，长度为 4 个字节 </span><br><span class="line">    uint32_t map_off_ = 0;  				   // dex 文件中 map 数据段偏移位置，偏移位置为 0x34，长度为 4 个字节 </span><br><span class="line">    uint32_t string_ids_size_ = 0;  		   // dex 文件包含的字符串数量，偏移量为 0x38，长度为 4 个字节 </span><br><span class="line">    uint32_t string_ids_off_ = 0;  			   // dex 文件字符串开始偏移位置，偏移量为 0x3c，长度为 4 个字节</span><br><span class="line">    uint32_t type_ids_size_ = 0;  			   // dex 文件类数量，不超过65525，偏移量为 0x40，长度为 4 个字节</span><br><span class="line">    uint32_t type_ids_off_ = 0;  			   // dex 文件类偏移位置，偏移量为 0x44，长度为 4 个字节 </span><br><span class="line">    uint32_t proto_ids_size_ = 0;  			   // dex 文件中方法原型数量，不超过65535，偏移量为 0x48，长度为 4 个字节</span><br><span class="line">    uint32_t proto_ids_off_ = 0;  			   // dex 文件中方法原型偏移位置，偏移量为 0x4c，长度为 4 个字节</span><br><span class="line">    uint32_t field_ids_size_ = 0;  			   // dex 文件中字段数量，偏移量为 0x50，长度为 4 个字节 </span><br><span class="line">    uint32_t field_ids_off_ = 0;  			   // dex 文件中字段偏移位置，偏移量为 0x54，长度为 4 个字节</span><br><span class="line">    uint32_t method_ids_size_ = 0;  		   // dex 文件中方法数量，偏移量为 0x58，长度为 4 个字节 </span><br><span class="line">    uint32_t method_ids_off_ = 0;  			   // dex 文件中方法偏移位置，偏移量为 0x5c，长度为 4 个字节 </span><br><span class="line">    uint32_t class_defs_size_ = 0;  		   // dex 文件中类定义数量，偏移量为 0x60，长度为 4 个字节 </span><br><span class="line">    uint32_t class_defs_off_ = 0;  			   // dex 文件中类定义偏移位置，偏移量为 0x64，长度为 4 个字节</span><br><span class="line">    uint32_t data_size_ = 0;  				   // dex 数据段大小，偏移量为 0x68，长度为 4 个字节 </span><br><span class="line">    uint32_t data_off_ = 0;  				   // dex 数据段偏移位置，偏移量为 0x6c，长度为 4 个字节</span><br><span class="line"></span><br><span class="line">    // Decode the dex magic version</span><br><span class="line">    uint32_t GetVersion() const;</span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure></div>
+
+<h5 id="DEX文件头解析"><a href="#DEX文件头解析" class="headerlink" title="DEX文件头解析"></a>DEX文件头解析</h5><p>还是以这个<a href="apk-debug.apk">apk-debug.apk</a>里面的classes.dex文件来查看解析这个DEX里面的信息，提取出里面的DEX文件，使用apktool禁止将dex文件转换为smali：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apktool d -s app-debug.apk</span><br></pre></td></tr></table></figure></div>
+</br>
+我们使用010Editor来查看反编译出来的[classes.dex](classes.dex.bak)文件，找找是否有上面看到的头信息相关的东西：
+<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-27_15-38-43.png" class=""></div>
+
+<p>可以看到开头的8个字节为16进制：64 65 78 0A 30 33 35 00<br>使用网站<a target="_blank" rel="noopener" href="https://www.bejson.com/convert/ox2str/">bejson</a>把16进制转为字符看到如下结果：</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-27_15-51-14.png" class=""></div>
+
+<p><strong>符合看到的第一个magic字段，表示dex文件标识和035版本</strong></p>
+<p>DEX文件里面的每个header字段像是一个字典，它列出了DEX文件的整体目录结构，我们可以解析这个文件相应的字段，来获取DEX里面的主要信息，例如checksum字段是DEX文件的校验和，我们可以通过它来判断DEX文件是否已经损坏或篡改，在做应用安全的时候可以对这个进行验证。分享一篇文章列出DEX文件的解析以及字段的简单介绍：<br><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1663852">一文读懂 DEX 文件格式解析</a>，可以参考写的pythone脚本列出DEX文件里面的字段解析</p>
+<p>还有一个比较便利的查看dex文件中的内容：使用010Editor下载解析查看Dex的模板，如图安装在线模板，然后重新打开Dex文件：</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-27_16-26-45.png" class=""></div>
+
+<p>重新打开classes.dex文件查看得到如下：</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-27_16-28-59.png" class=""></div>
+
+<p>这个查看16进制文件的工具不愧是神器！！</p>
+<h3 id="DEX文件的验证与优化流程"><a href="#DEX文件的验证与优化流程" class="headerlink" title="DEX文件的验证与优化流程"></a>DEX文件的验证与优化流程</h3><p>Dalvik虚拟机使用dexopt工具来做验证和优化工作，源码入口位于<a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/+/android-4.4w_r1:dalvik/dexopt/OptMain.cpp">android-4.4w_r1:dalvik&#x2F;dexopt&#x2F;OptMain.cpp</a><br>详细的源码流程待后续有需要可查看。</p>
+<p>验证主要是验证DEX中的checksum和signature字段的信息<br>优化主要是进行指令替换，替换的优先级为：volatile替换最高，正确性替换其次，高性能替换最低。</p>
+<h3 id="DEX文件修改"><a href="#DEX文件修改" class="headerlink" title="DEX文件修改"></a>DEX文件修改</h3><p>之前的分析文章<a href="https://lymanye.github.io/2022/10/16/analysis-of-android-program-decompile-and-resignature/#more">Android 程序分析 &amp; 反编译重签名</a> 了解了破解的一般步骤，是通过修改smali代码指令，然后重新生成apk签名的，有一种方法，直接修改classes.dex的16进制文件，然后根据上面了解的重新生成checksum和signature信息，也可以实现破解。使用<a target="_blank" rel="noopener" href="https://www.newasp.com/soft/346032.html">IDA Pro</a>工具来修改16进制文件，它可以找到破解点对应的文件偏移。使用这个软件进行如下步骤操作，此软件的详细使用后续再熟悉</p>
+<ul>
+<li>查看解包目录下的&#x2F;app-debug&#x2F;res&#x2F;values&#x2F;public.xml搜索unsuccessed得到id为0x7f0d0028<img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_10-34-39.png" class=""></li>
+<li>IDA pro使用alt+T弹出搜索框搜索0x7f0d0028<img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_10-36-15.png" class=""></li>
+</ul>
+<p>得到如下搜索结果：</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_11-06-47.png" class=""></div>
+双击第一个在onClick函数里面的内容，得到如下结果
+<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_11-07-31.png" class=""></div>
+大概可以看出是if-nez这个语句的两个case分支，选中if-nez跳到Hex View-1 的Tab
+<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_11-09-51.png" class=""></div>
+其中39为if-nez指令的opcode,把这个改为相反的if-eqz也就是指令38
+* 保存修改内容
+IDA Pro从6.8版本支持补丁修改内容，点击Edit->Patch Program-> Change byte
+修改指令39为38。修改后点击Edit->Patch Program->Apply patches to input file
+
+<ul>
+<li><p>修改checksum和signature<br>修改了的dex的checksum和signature需要变更，不然虚拟机验证的时候会不通过。<br>有两种方法修改这个</p>
+<ul>
+<li><p>使用010Editor应用如下<a href="DexFixer.lsc">DexFixer.lsc</a>脚本，可以完成修改.修改后的checksum和signature如下：</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_11-35-32.png" class=""></div>
+</li>
+<li><p>使用<a href="dex2jar-2.1.zip">dex2jar-2.1.zip</a>提供的d2j-dex-recompute-checksum.执行如下命令：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">d2j-dex-recompute-checksum -f ./classes.dex</span><br></pre></td></tr></table></figure></div>
+</br>
+得到classes-rechecksum.dex把这个dex放到010Editor查看checksum和signature
+<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_11-41-23.png" class=""></div>
+和我们上面的脚本运行的一样，ok修改完毕</li>
+</ul>
+</li>
+<li><p>验证apk<br>重新得到验证的classes.dex放到app-debug目录中替换原有的classes.dex</p>
+<p>回编apk</p>
+</li>
+</ul>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apktool b app-debug</span><br></pre></td></tr></table></figure></div>
+</br>
+从目录获取/app-debug/dist/app-debug.apk做签名安装即可(注意各版本Android v1，v2签名的东西)，签名可以看这篇文章：[Android 程序分析 & 反编译重签名](https://lymanye.github.io/2022/10/16/analysis-of-android-program-decompile-and-resignature/)
+
+<h3 id="MultiDex"><a href="#MultiDex" class="headerlink" title="MultiDex"></a>MultiDex</h3><p>Dex分包技术。DEX中包含的方法数不能超过64KB，但是应用可能不止使用这么多方法，于是有这个技术的使用场景。新的Apktool已经支持对多个dex文件的apk进行反编译了。</p>
+<h2 id="AndroidManifest-xml"><a href="#AndroidManifest-xml" class="headerlink" title="AndroidManifest.xml"></a>AndroidManifest.xml</h2><p>AndroidManifest.xml才有XML文本格式，包含软件的名称，图标，主题，包名，组件配置等信息。</p>
+<h3 id="AXML"><a href="#AXML" class="headerlink" title="AXML"></a>AXML</h3><h4 id="AXML文件格式"><a href="#AXML文件格式" class="headerlink" title="AXML文件格式"></a>AXML文件格式</h4><p>AndroidStudio编译APK的时候，会将AndroidManifest.xml处理打包进去。打包进的AndroidManifest.xml被编译成二进制格式的文件。直接解压apk文件，查看这个文件是乱码的，不能正常显示。打包后的AndroidManifest.xml称为AXML，它的格式称为AXML格式</p>
+<p>010Editor可以安装AXML文件文件格式模板，我们使用直接解压我们文章中的apk里面的<a href="AndroidManifest.xml">AndroidManifest.xml</a>,通过在010安装模板看看：</p>
+<ul>
+<li>安装AndroidManifest.bt在线模板<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_14-45-14.png" class=""></div></li>
+<li>点击查看HEX十六进制文件格式<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_14-48-30.png" class=""></div></li>
+<li>应用第一步下好的模板<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_14-49-34.png" class=""></div></li>
+<li>查看AndroidManifest.xml的文件结果<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_14-50-48.png" class=""></div></li>
+</ul>
+<p>AXML的文件结构提供参考解析文章：<a target="_blank" rel="noopener" href="https://blog.csdn.net/beyond702/article/details/51830108">手把手教你解析AXML</a></p>
+<h4 id="AXML文件的修改"><a href="#AXML文件的修改" class="headerlink" title="AXML文件的修改"></a>AXML文件的修改</h4><p>有些APK加固后无法使用Apktool来反编译，有可能是构造了一个畸形的AndroidManifest.xml，安装是可以安装应用，解析会出现问题，这个时候可能要修改AXML文件。</p>
+<ul>
+<li>配合010Editor以AXML模板查看文件格式，找到异常来修改</li>
+<li>使用工具来修改：<a target="_blank" rel="noopener" href="https://github.com/ele7enxxh/AmBinaryEditor">AmBinaryEditor</a> , <a target="_blank" rel="noopener" href="https://github.com/zylc369/AndroidManifestFix">AndroidManifestFix</a></li>
+</ul>
+<h2 id="resources-arsc"><a href="#resources-arsc" class="headerlink" title="resources.arsc"></a>resources.arsc</h2><p>这个文件存放了应用所有资源文件对应的Id,名字等信息。应用的png,jpg图片原样放到&#x2F;res目录下面，layout,drawalbe,color这些安装AXML文件格式存放。Java层的R.java是连接这些资源的桥梁，通过编译器自动生成。</p>
+<h3 id="ARSC文件格式"><a href="#ARSC文件格式" class="headerlink" title="ARSC文件格式"></a>ARSC文件格式</h3><p>apk中只有resource.arsc使用了这种格式，同样我们可以通过010Editor的AndroidResource.bt在线模板解析这个格式文件。</p>
+<ul>
+<li>安装AndroidResource.bt<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_15-09-26.png" class=""></div></li>
+<li>导入<a href="resource.arsc">resource.arsc</a>到010Editor软件,查看文件结构<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_15-11-21.png" class=""></div></li>
+</ul>
+<p>详细arsc文件格式参考：<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1870342">ARSC 文件格式解析</a></p>
+<h3 id="ARSC文件修改"><a href="#ARSC文件修改" class="headerlink" title="ARSC文件修改"></a>ARSC文件修改</h3><p>修改arsc文件的目的</p>
+<ul>
+<li>阻止或修正APK的反编译，特殊处理的arsc可以正常加载，但是apktool会无法反编译出来</li>
+<li>修改arsc里的string资源</li>
+</ul>
+<p>修改的方法</p>
+<ul>
+<li>还是使用010Editor查看修改</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/MrIkso/ArscEditor">ArscEditor</a>工具修改</li>
+</ul>
+<h2 id="META-INF目录"><a href="#META-INF目录" class="headerlink" title="META-INF目录"></a>META-INF目录</h2><p>这个目录存储一些和APK签名有关的信息</p>
+<img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_15-21-00.png" class="">
+
+<h3 id="CERT-RSA"><a href="#CERT-RSA" class="headerlink" title="CERT.RSA"></a>CERT.RSA</h3><p>存放的是开发者证书与签名信息。改文件可以识别开发者的身份，以及判断APK是否被篡改。CERT.RSA是由DER编码的证书。由于DER使用了ASN1编码，任何使用ASN1解码库都能对其解码。例如使用openssl提供的解码功能查看CERT.RSA的内容。</p>
+<blockquote>
+<p>运行环境Ubuntu</p>
+</blockquote>
+<ul>
+<li><p>安装openssl</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install openssl</span><br></pre></td></tr></table></figure></div>
+</br>
+查看openssl version
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">openssl version     </span><br><span class="line">OpenSSL 1.1.1q  5 Jul 2022</span><br></pre></td></tr></table></figure></div>
+</br>
+</li>
+<li><p>查看证书信息</p>
+</li>
+</ul>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl pkcs7 -inform DER -<span class="keyword">in</span> CERT.RSA -noout -print-certs -text</span><br></pre></td></tr></table></figure></div>
+</br>
+
+<p>执行报如下错误，暂未找到原因，有知道的麻烦留言告知下：</p>
+<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">openssl pkcs7 -inform DER -<span class="keyword">in</span> CERT.RSA -noout -print-certs -text</span><br><span class="line">pkcs7: Option unknown option -print-certs</span><br><span class="line">pkcs7: Use -<span class="built_in">help</span> <span class="keyword">for</span> summary.</span><br></pre></td></tr></table></figure></div>
+<ul>
+<li>使用keytool查看CERT.RSA<div class="highlight-wrap" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">keytool -printcert -file CERT.RSA</span><br></pre></td></tr></table></figure></div>
+</br>
+得到如下证书信息，是我们之前创建的证书：
+<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_16-10-11.png" class=""></div></li>
+</ul>
+<h3 id="MANIFEST-MF"><a href="#MANIFEST-MF" class="headerlink" title="MANIFEST.MF"></a>MANIFEST.MF</h3><p>它是一个文本文件，可以直接打开查看，是签名的清单文件。</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_16-13-19.png" class=""></div>
+可以看到它是由SignApk创建，v1签名。里面存储的是文件的SHA-1散列值的Base64值
+
+<h3 id="CERT-SF"><a href="#CERT-SF" class="headerlink" title="CERT.SF"></a>CERT.SF</h3><p>签名信息文件，它是一个文本文件。</p>
+<div style="width:50%;margin:auto"><img data-src="/2022/10/25/android_file_format/Snipaste_2022-10-29_16-17-53.png" class=""></div>
+
+<p>其中SHA1-Digest-Manifest的值是对MANIFEST.MF的内容的SHA-1散列值进行base64计算得到的结果</p>
+<h2 id="ODEX文件"><a href="#ODEX文件" class="headerlink" title="ODEX文件"></a>ODEX文件</h2><p>odex是优化版的dex。<br>在Android N之前，Dalvik虚拟机执行程序dex文件前，系统会对dex文件做优化，生成可执行文件odex，保存到data&#x2F;dalvik-cache目录，最后把apk文件中的dex文件删除。这里不做详细的记录了是Android N之前的一套玩法</p>
+<h2 id="OAT"><a href="#OAT" class="headerlink" title="OAT"></a>OAT</h2><p>oat 文件是 ART虚拟机运行的文件，是一种ELF格式的二进制可运行文件，包含 DEX 文件和编译出的本地机器指令文件。因为oat文件包含DEX文件，因此比ODEX文件占用空间更大。</p>
+<p>由于其在安装时打包在里面的classes.dex文件会被工具dex2oat翻译成本地机器指令，最终得到一个ELF格式的OAT文件，ART加载OAT文件后不需要经过处理就可以直接运行，它没有了从字节码装换成机器码的过程，因此运行速度更快。</p>
+<p>dex2oat与dexopt不同，dex2oat更像一个编译器，将DEX中的Dalvik字节码翻译成Native机器码。</p>
+<h3 id="oat生成"><a href="#oat生成" class="headerlink" title="oat生成"></a>oat生成</h3><p>生成看网上说是通过调用手机的&#x2F;system&#x2F;bin&#x2F;dex2oat来执行的，具体的流程还是得啃源码，后续有这部分需要再细读</p>
+<h3 id="oat文件格式"><a href="#oat文件格式" class="headerlink" title="oat文件格式"></a>oat文件格式</h3><p><a target="_blank" rel="noopener" href="https://my.oschina.net/ososchina/blog/4818362">OAT 文件</a></p>
+<h3 id="oat转换为Dex"><a href="#oat转换为Dex" class="headerlink" title="oat转换为Dex"></a>oat转换为Dex</h3><p>oat里面包含了dex文件把它提取出来，通过使用oatdump可以提取出oat里面的dex文件。我这边没有可root的机器，没有搞到oat文件，暂时不实际操作这些部分的内容。</p>
+<p>也可以通过010Editor添加这个<a href="Oat2Dex.1sc">oat2dex</a>的脚本进行转换</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>Lyman
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://lymanye.github.io/2022/10/25/android_file_format/" title="Android文件格式">https://lymanye.github.io/2022/10/25/android_file_format/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Android%E9%80%86%E5%90%91/" rel="tag"># Android逆向</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/10/21/view_android_source_code/" rel="prev" title="Android源码查看">
+                  <i class="fa fa-chevron-left"></i> Android源码查看
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Lyman</span>
+  <span class="post-meta-divider">|</span>
+  <span id="busuanzi_container_site_pv">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    访问量：<span id="busuanzi_value_site_pv"></span> 次数
+  </span>
+
+  <span class="post-meta-divider">|</span>
+  <span id="busuanzi_container_site_uv">
+    访客数：<span id="busuanzi_value_site_uv"></span> 人次
+  </span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">51k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">47 分钟</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lozad.js/1.16.0/lozad.min.js" integrity="sha256-mOFREFhqmHeQbXpK2lp4nA3qooVgACfh88fpJftLBbc=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pangu/4.0.7/pangu.min.js" integrity="sha256-j+yj56cdEY2CwkVtGyz18fNybFGpMGJ8JxG3GSyO2+I=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script><script src="/js/code-unfold.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+  <script src="/js/third-party/fancybox.js"></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-cn","enable":true,"serverURL":"http://104.156.225.196:8360","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":true,"pageview":false,"placeholder":"请文明评论呀","avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"visitor":true,"comment_count":true,"requiredFields":[],"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","el":"#waline","comment":true,"path":"/2022/10/25/android_file_format/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>
